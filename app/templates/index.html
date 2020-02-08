@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Переадресация Telegram</title>
+    <meta name="description" content="Переадресация Telegram, Переадресация Телеграм, Ссылка в Телеграм.">
+    <meta name="author" content="Anton Lebedev">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url('static', filename='css/materialize.min.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <div>
+        <header>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <h1>Переадресация Telegram</h1>
+                        <p>Сервис позволяет обойти блокировку и дать рабочую ссылку на Телеграм аккаунт, канал или чат.</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <form method="post">
+                        <input type="text" name="url" id="url" class="form-control input-sm" placeholder="https://t.me/lebster" value="{{ source_url }}"/>
+                        <input type="submit" value="Показать ссылку" class="waves-effect waves-light btn" />
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    {{ redirect_url }}
+                    {{ error }}
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <p class="grey-text">Чтобы связаться со мной, <a href="mailto:mailbox@lebster.me">напиши мне на электронную почту</a> или <a href="tg://resolve/?domain=lebster">отправь сообщение в телеграм</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Переадресация Telegram</title>
+    <meta name="description" content="Переадресация Telegram, Переадресация Телеграм, Ссылка в Телеграм.">
+    <meta name="author" content="Anton Lebedev">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url('static', filename='css/materialize.min.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <div>
+        <header>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <!---->
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    {% if location %}
+                        <p><a href='{{ location }}' class='waves-effect waves-light btn'>Открыть в Телеграм</a></p>
+                    {% else %}
+                        <p>Указан неверный адрес.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <p class="grey-text">Чтобы связаться со мной, <a href="mailto:mailbox@lebster.me">напиши мне на электронную почту</a> или <a href="tg://resolve/?domain=lebster">отправь сообщение в телеграм</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
