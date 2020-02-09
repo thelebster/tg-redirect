@@ -118,6 +118,8 @@ async def redirect(request):
                         profile_name = profile.username
 
                 await client.download_profile_photo(name, f'/tmp/dl/img/{name}.jpg', download_big=False)
+                # Fix file permissions.
+                os.chmod(f'/tmp/dl/img/{name}.jpg', 0o777)
                 return {
                     'profile_photo': f'img/{name}.jpg',
                     'profile_name': profile_name,
