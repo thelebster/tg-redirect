@@ -16,8 +16,6 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s
 logger = logging.getLogger(__file__)
 
 TEMPLATES_ROOT = pathlib.Path(__file__).parent / 'templates'
-STATIC_ROOT = pathlib.Path(__file__).parent / 'static'
-DOWNLOADS_ROOT = pathlib.Path(__file__).parent / 'dl'
 
 # Get your own api_id and api_hash from https://my.telegram.org, under API Development.
 TELEGRAM_API_ID = os.getenv('TELEGRAM_API_ID')
@@ -117,11 +115,9 @@ async def redirect(request):
                     if not profile_name.strip():
                         profile_name = profile.username
 
-                profile_photo = await client.download_profile_photo(name, f'/tmp/dl/img/{name}.jpg', download_big=False)
-                # Fix file permissions.
-                os.chmod(profile_photo, 0o777)
+                profile_photo = await client.download_profile_photo(name, f'/tmp/files/{name}.jpg', download_big=False)
                 return {
-                    'profile_photo': f'img/{name}.jpg',
+                    'profile_photo': f'{name}.jpg',
                     'profile_name': profile_name,
                     'location': location,
                 }
@@ -138,9 +134,7 @@ app.add_routes([web.get('/', index, name='index'),
                 web.post('/', index, name='index'),
                 web.get('/{name}', redirect, name='account'),
                 web.get('/joinchat/{code}', redirect, name='joinchat'),
-                web.get('/{name}/{post}', redirect, name='post'),
-                web.static('/static/', path=str(STATIC_ROOT), name='static'),
-                web.static('/dl/', path=str(DOWNLOADS_ROOT), name='dl')])
+                web.get('/{name}/{post}', redirect, name='post')])
 
 setup_jinja(app)
 
