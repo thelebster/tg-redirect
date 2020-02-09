@@ -103,7 +103,7 @@ async def redirect(request):
         if name is not None:
             try:
                 session_id = str(uuid.uuid1())
-                client = TelegramClient(session_id, TELEGRAM_API_ID, TELEGRAM_API_HASH)
+                client = TelegramClient(f'/tmp/sessions/{session_id}', TELEGRAM_API_ID, TELEGRAM_API_HASH)
                 await client.start(bot_token=TELEGRAM_BOT_TOKEN)
                 profile = await client.get_entity(name)
                 if hasattr(profile, 'broadcast'):

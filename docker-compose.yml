@@ -13,5 +13,6 @@ services:
     restart: always
     volumes:
       - ./files/img:/tmp/files/img
+      - ./sessions:/tmp/sessions
     ports:
       - 127.0.0.1:8000:8080
