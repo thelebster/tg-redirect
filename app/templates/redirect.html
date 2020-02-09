@@ -12,11 +12,20 @@
 </head>
 <body>
     <div>
-        <header>
+        <header class="section">
             <div class="container">
                 <div class="row">
                     <div class="col">
                         <!---->
+                        {% if profile_photo %}
+                        <img src="{{ url('dl', filename=profile_photo) }}" />
+                        {% endif %}
+                        {% if profile_name %}
+                        <h5>{{ profile_name }}</h5>
+                        {% endif %}
+                        {% if profile_status %}
+                        <p class="grey-text">{{ profile_status }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>

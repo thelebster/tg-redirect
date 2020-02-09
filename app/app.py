@@ -8,9 +8,20 @@ import jinja2
 import os
 import json
 from urllib.parse import urlparse
+from telethon import TelegramClient
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.WARNING)
+logger = logging.getLogger(__file__)
 
 TEMPLATES_ROOT = pathlib.Path(__file__).parent / 'templates'
 STATIC_ROOT = pathlib.Path(__file__).parent / 'static'
+DOWNLOADS_ROOT = pathlib.Path(__file__).parent / 'dl'
+
+# Get your own api_id and api_hash from https://my.telegram.org, under API Development.
+TELEGRAM_API_ID = os.getenv('TELEGRAM_API_ID')
+TELEGRAM_API_HASH = os.getenv('TELEGRAM_API_HASH')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
 
 def setup_jinja(app):
@@ -49,6 +60,7 @@ async def index(request):
                 'redirect_url': redirect_url,
             }
         except Exception as err:
+            logger.error(err)
             return {
                 'source_url': source_url,
                 'error': str(err),
@@ -79,6 +91,39 @@ async def redirect(request):
     if location is None:
         return {}
     else:
+        try:
+            name
+        except NameError:
+            name = None
+
+        try:
+            post
+        except NameError:
+            post = None
+
+        if name is not None:
+            try:
+                client = TelegramClient('redirect', TELEGRAM_API_ID, TELEGRAM_API_HASH, proxy=None)
+                await client.start(bot_token=TELEGRAM_BOT_TOKEN)
+                profile = await client.get_entity(name)
+                if hasattr(profile, 'broadcast'):
+                    # This is channel or chat.
+                    profile_name = profile.title
+                else:
+                    # This is user or bot.
+                    profile_name = ' '.join(list(filter(None, (profile.first_name, profile.last_name))))
+                    if not profile_name.strip():
+                        profile_name = profile.username
+
+                await client.download_profile_photo(name, f'/tmp/dl/img/{name}.jpg', download_big=False)
+                return {
+                    'profile_photo': f'img/{name}.jpg',
+                    'profile_name': profile_name,
+                    'location': location,
+                }
+            except Exception as err:
+                logger.error(err)
+
         return {
             'location': location,
         }
@@ -90,7 +135,8 @@ app.add_routes([web.get('/', index, name='index'),
                 web.get('/{name}', redirect, name='account'),
                 web.get('/joinchat/{code}', redirect, name='joinchat'),
                 web.get('/{name}/{post}', redirect, name='post'),
-                web.static('/static/', path=str(STATIC_ROOT), name='static')])
+                web.static('/static/', path=str(STATIC_ROOT), name='static'),
+                web.static('/dl/', path=str(DOWNLOADS_ROOT), name='dl')])
 
 setup_jinja(app)
 

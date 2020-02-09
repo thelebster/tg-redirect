@@ -9,6 +9,7 @@ verify_ssl = true
 python-dotenv = "*"
 aiohttp = "*"
 aiohttp-jinja2 = "*"
+telethon = "*"
 
 [requires]
 python_version = "3.7"

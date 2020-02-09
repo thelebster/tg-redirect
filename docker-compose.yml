@@ -3,9 +3,15 @@ version: '3'
 services:
   tg-redirect:
     build: ./app
+    environment:
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
     image: tg-redirect
     hostname: tg-redirect
     container_name: tg-redirect
     restart: always
+    volumes:
+      - ./app/dl:/tmp/dl
     ports:
       - 127.0.0.1:8000:8080
