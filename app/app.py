@@ -8,7 +8,7 @@ import jinja2
 import os
 import json
 from urllib.parse import urlparse
-from telethon import TelegramClient
+from telethon import TelegramClient, connection
 import logging
 import uuid
 
@@ -21,6 +21,10 @@ TEMPLATES_ROOT = pathlib.Path(__file__).parent / 'templates'
 TELEGRAM_API_ID = os.getenv('TELEGRAM_API_ID')
 TELEGRAM_API_HASH = os.getenv('TELEGRAM_API_HASH')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+
+MTPROXY_HOST = os.getenv('MTPROXY_HOST')
+MTPROXY_PORT = os.getenv('MTPROXY_PORT')
+MTPROXY_SECRET = os.getenv('MTPROXY_SECRET')
 
 
 def setup_jinja(app):
@@ -103,7 +107,20 @@ async def redirect(request):
         if name is not None:
             try:
                 session_id = str(uuid.uuid1())
-                client = TelegramClient(f'/tmp/sessions/{session_id}', TELEGRAM_API_ID, TELEGRAM_API_HASH)
+                client = TelegramClient(
+                    f'/tmp/sessions/{session_id}',
+                    TELEGRAM_API_ID,
+                    TELEGRAM_API_HASH,
+                    # Use one of the available connection modes.
+                    # Normally, this one works with most proxies.
+                    connection=connection.ConnectionTcpMTProxyRandomizedIntermediate,
+                    # Then, pass the proxy details as a tuple:
+                    #     (host name, port, proxy secret)
+                    #
+                    # If the proxy has no secret, the secret must be:
+                    #     '00000000000000000000000000000000'
+                    proxy=(MTPROXY_HOST, int(MTPROXY_PORT), MTPROXY_SECRET)
+                )
                 await client.start(bot_token=TELEGRAM_BOT_TOKEN)
                 profile = await client.get_entity(name)
                 if hasattr(profile, 'broadcast'):
