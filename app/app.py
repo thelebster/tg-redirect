@@ -105,7 +105,7 @@ async def redirect(request):
         if name is not None:
             try:
                 session_id = str(uuid.uuid1())
-                client = TelegramClient(session_id, TELEGRAM_API_ID, TELEGRAM_API_HASH, proxy=None)
+                client = TelegramClient(session_id, TELEGRAM_API_ID, TELEGRAM_API_HASH)
                 await client.start(bot_token=TELEGRAM_BOT_TOKEN)
                 profile = await client.get_entity(name)
                 if hasattr(profile, 'broadcast'):
@@ -117,9 +117,9 @@ async def redirect(request):
                     if not profile_name.strip():
                         profile_name = profile.username
 
-                await client.download_profile_photo(name, f'/tmp/dl/img/{name}.jpg', download_big=False)
+                profile_photo = await client.download_profile_photo(name, f'/tmp/dl/img/{name}.jpg', download_big=False)
                 # Fix file permissions.
-                os.chmod(f'/tmp/dl/img/{name}.jpg', 0o777)
+                os.chmod(profile_photo, 0o777)
                 return {
                     'profile_photo': f'img/{name}.jpg',
                     'profile_name': profile_name,

@@ -12,7 +12,7 @@ docker-compose -f docker-compose.yml up --build -d
 
 ```
 mkdir -p $PWD/app/dl
-ln -s $PWD/app/dl /tmp/
+ln -s $PWD/app/dl/ /tmp/dl
 ```
 
 ```
