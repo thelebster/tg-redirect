@@ -10,8 +10,9 @@ import json
 from urllib.parse import urlparse
 from telethon import TelegramClient
 import logging
+import uuid
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.WARNING)
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
 
 TEMPLATES_ROOT = pathlib.Path(__file__).parent / 'templates'
@@ -103,7 +104,8 @@ async def redirect(request):
 
         if name is not None:
             try:
-                client = TelegramClient('redirect', TELEGRAM_API_ID, TELEGRAM_API_HASH, proxy=None)
+                session_id = str(uuid.uuid1())
+                client = TelegramClient(session_id, TELEGRAM_API_ID, TELEGRAM_API_HASH, proxy=None)
                 await client.start(bot_token=TELEGRAM_BOT_TOKEN)
                 profile = await client.get_entity(name)
                 if hasattr(profile, 'broadcast'):
