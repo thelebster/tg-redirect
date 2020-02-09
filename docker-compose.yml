@@ -12,6 +12,6 @@ services:
     container_name: tg-redirect
     restart: always
     volumes:
-      - ./files:/tmp/files
+      - ./files/img:/tmp/files/img
     ports:
       - 127.0.0.1:8000:8080

@@ -115,7 +115,7 @@ async def redirect(request):
                     if not profile_name.strip():
                         profile_name = profile.username
 
-                profile_photo = await client.download_profile_photo(name, f'/tmp/files/{name}.jpg', download_big=False)
+                profile_photo = await client.download_profile_photo(name, f'/tmp/files/img/{name}.jpg', download_big=False)
                 return {
                     'profile_photo': f'{name}.jpg',
                     'profile_name': profile_name,
