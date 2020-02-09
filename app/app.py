@@ -26,6 +26,8 @@ MTPROXY_HOST = os.getenv('MTPROXY_HOST')
 MTPROXY_PORT = os.getenv('MTPROXY_PORT')
 MTPROXY_SECRET = os.getenv('MTPROXY_SECRET')
 
+SHOW_INFO = os.getenv('SHOW_INFO', 'False')
+
 
 def setup_jinja(app):
     loader = jinja2.FileSystemLoader(str(TEMPLATES_ROOT))
@@ -104,7 +106,7 @@ async def redirect(request):
         except NameError:
             post = None
 
-        if name is not None:
+        if name is not None and SHOW_INFO == 'True':
             try:
                 session_id = str(uuid.uuid1())
                 client = TelegramClient(

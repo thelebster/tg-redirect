@@ -10,6 +10,7 @@ services:
       - MTPROXY_HOST=${MTPROXY_HOST}
       - MTPROXY_PORT=${MTPROXY_PORT}
       - MTPROXY_SECRET=${MTPROXY_SECRET}
+      - SHOW_INFO=${SHOW_INFO}
     image: tg-redirect
     hostname: tg-redirect
     container_name: tg-redirect
