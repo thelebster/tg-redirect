@@ -28,7 +28,7 @@ server {
     proxy_pass http://tg-redirect;
   }
 
-  location /files/ {
+  location /files/img/ {
     root /srv/tg-redirect;
   }
 

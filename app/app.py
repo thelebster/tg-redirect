@@ -17,6 +17,8 @@ logger = logging.getLogger(__file__)
 
 TEMPLATES_ROOT = pathlib.Path(__file__).parent / 'templates'
 
+DOMAIN_NAME = os.getenv('DOMAIN_NAME')
+
 # Get your own api_id and api_hash from https://my.telegram.org, under API Development.
 TELEGRAM_API_ID = os.getenv('TELEGRAM_API_ID')
 TELEGRAM_API_HASH = os.getenv('TELEGRAM_API_HASH')
@@ -54,9 +56,9 @@ async def index(request):
             path = url.path.split('/')
             path.pop(0)
 
-            redirect_url = f'https://tg.nnm.guru/{path[0]}'
+            redirect_url = f'https://{DOMAIN_NAME}/{path[0]}'
             if len(path) == 2:
-                redirect_url = f'https://tg.nnm.guru/{path[0]}/{path[1]}'
+                redirect_url = f'https://{DOMAIN_NAME}/{path[0]}/{path[1]}'
                 if path[0] != 'joinchat' and not path[1].isnumeric():
                     raise Exception('Номер сообщения должен быть числом.')
 

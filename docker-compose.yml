@@ -4,6 +4,7 @@ services:
   tg-redirect:
     build: ./app
     environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
       - TELEGRAM_API_ID=${TELEGRAM_API_ID}
       - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
