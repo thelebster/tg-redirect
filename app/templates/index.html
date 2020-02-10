@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Переадресация Telegram</title>
+    <title>Переадресация Телеграм</title>
     <meta name="description" content="Переадресация Telegram, Переадресация Телеграм, Ссылка в Телеграм.">
     <meta name="author" content="Anton Lebedev">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +13,7 @@
 </head>
 <body>
     <div>
-        <header>
+        <header class="section">
             <div class="container">
                 <div class="row">
                     <div class="col">
@@ -23,25 +23,29 @@
                 </div>
             </div>
         </header>
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <form method="post">
-                        <input type="text" name="url" id="url" class="form-control input-sm" placeholder="https://t.me/lebster" value="{{ source_url }}"/>
-                        <input type="submit" value="Показать ссылку" class="waves-effect waves-light btn" />
-                    </form>
+        <div class="section">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <form method="post">
+                            <input type="text" name="url" id="url" class="form-control input-sm" placeholder="https://t.me/lebster" value="{{ source_url }}"/>
+                            <input type="submit" value="Показать ссылку" class="waves-effect waves-light btn" />
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <a href="{{ redirect_url }}">{{ redirect_url }}</a>
-                    {{ error }}
+        <div class="section">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="{{ redirect_url }}">{{ redirect_url }}</a>
+                        {{ error }}
+                    </div>
                 </div>
             </div>
         </div>
-        <footer>
+        <footer class="section">
             <div class="container">
                 <div class="row">
                     <div class="col">
