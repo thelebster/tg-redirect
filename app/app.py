@@ -149,7 +149,8 @@ async def redirect(request):
 
                     profile = {}
                     profile['id'] = profile_entity.id
-                    profile['bot'] = profile_entity.bot
+                    if hasattr(profile_entity, 'bot'):
+                        profile['bot'] = profile_entity.bot
                     profile['username'] = profile_entity.username
                     if hasattr(profile_entity, 'broadcast'):
                         profile['broadcast'] = profile_entity.broadcast
