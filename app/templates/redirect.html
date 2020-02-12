@@ -10,10 +10,32 @@
     <link rel=stylesheet type=text/css href="/static/css/custom.css">
     <link rel="icon" type="img/png" href="/static/img/favicon.png">
     <!-- Yandex.Metrika counter --> <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(57429748, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/57429748" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->
+    {% set base_url = ~base_path if base_path else '' %}
     <meta property="og:title" content="{{ profile_name if profile_name else '' }}">
-    <meta property="og:image" content="{{ '/files/img/' ~profile_photo if profile_photo else '' }}">
+    <meta property="og:image" content="{{ base_url ~'/files/img/' ~profile_photo if profile_photo else '' }}">
     <meta property="og:site_name" content="Telegram">
     <meta property="og:description" content="{{ profile_descrtiption if profile_descrtiption else '' }}">
+    <meta property="twitter:title" content="{{ profile_name if profile_name else '' }}">
+    <meta property="twitter:image" content="{{ base_url ~'/files/img/' ~profile_photo if profile_photo else '' }}">
+    <meta property="twitter:site" content="@Telegram">
+    <meta property="al:ios:app_store_id" content="686449807">
+    <meta property="al:ios:app_name" content="Telegram Messenger">
+    <meta property="al:ios:url" content="{{ location }}">
+    <meta property="al:android:url" content="{{ location }}">
+    <meta property="al:android:app_name" content="Telegram">
+    <meta property="al:android:package" content="org.telegram.messenger">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@Telegram">
+    <meta name="twitter:description" content="{{ profile_descrtiption if profile_descrtiption else '' }}">
+    <meta name="twitter:app:name:iphone" content="Telegram Messenger">
+    <meta name="twitter:app:id:iphone" content="686449807">
+    <meta name="twitter:app:url:iphone" content="{{ location }}">
+    <meta name="twitter:app:name:ipad" content="Telegram Messenger">
+    <meta name="twitter:app:id:ipad" content="686449807">
+    <meta name="twitter:app:url:ipad" content="{{ location }}">
+    <meta name="twitter:app:name:googleplay" content="Telegram">
+    <meta name="twitter:app:id:googleplay" content="org.telegram.messenger">
+    <meta name="twitter:app:url:googleplay" content="{{ location }}">
 </head>
 <body>
     <div>

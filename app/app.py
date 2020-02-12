@@ -179,12 +179,14 @@ async def redirect(request):
                     'profile_photo': f'{name}.jpg',
                     'profile_name': profile_name,
                     'location': location,
+                    'base_path': f'https://{DOMAIN_NAME}',
                 }
             except Exception as err:
                 logger.error(err)
 
         return {
             'location': location,
+            'base_path': f'https://{DOMAIN_NAME}',
         }
 
 
