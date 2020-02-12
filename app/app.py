@@ -8,7 +8,7 @@ import jinja2
 import os
 import json
 from urllib.parse import urlparse
-from telethon import TelegramClient, connection
+from telethon import TelegramClient, connection, tl
 import logging
 import uuid
 
@@ -30,6 +30,11 @@ MTPROXY_SECRET = os.getenv('MTPROXY_SECRET')
 MTPROXY_ENABLED = False if MTPROXY_HOST is None or MTPROXY_PORT is None or MTPROXY_SECRET is None else True
 
 SHOW_INFO = os.getenv('SHOW_INFO', 'False')
+DEVELOPMENT = os.getenv('DEVELOPMENT', 'False')
+
+IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
+SESSIONS_DIR = os.getenv('SESSIONS_DIR', '/tmp/sessions')
+CACHE_DIR = os.getenv('CACHE_DIR', '/tmp/cache')
 
 
 def setup_jinja(app):
@@ -114,7 +119,7 @@ async def redirect(request):
                 session_id = str(uuid.uuid1())
                 if MTPROXY_ENABLED:
                     client = TelegramClient(
-                        f'/tmp/sessions/{session_id}',
+                        f'{SESSIONS_DIR}/{session_id}',
                         TELEGRAM_API_ID,
                         TELEGRAM_API_HASH,
                         # Use one of the available connection modes.
@@ -128,19 +133,48 @@ async def redirect(request):
                         proxy=(MTPROXY_HOST, int(MTPROXY_PORT), MTPROXY_SECRET)
                     )
                 else:
-                    client = TelegramClient(f'/tmp/sessions/{session_id}', TELEGRAM_API_ID, TELEGRAM_API_HASH)
+                    client = TelegramClient(f'{SESSIONS_DIR}/{session_id}', TELEGRAM_API_ID, TELEGRAM_API_HASH)
                 await client.start(bot_token=TELEGRAM_BOT_TOKEN)
-                profile = await client.get_entity(name)
+
+                # Try cache.
+                cache_filename = f'{CACHE_DIR}/{name}.json'
+                # if post is not None:
+                #     cache_filename = f'{CACHE_DIR}/{name}-{post}.json'
+                if os.path.exists(cache_filename):
+                    with open(cache_filename) as cache:
+                        profile = json.load(cache)
+                else:
+                    profile_entity = await client.get_entity(name)
+                    logger.debug(profile_entity)
+
+                    profile = {}
+                    profile['id'] = profile_entity.id
+                    profile['bot'] = profile_entity.bot
+                    profile['username'] = profile_entity.username
+                    if hasattr(profile_entity, 'broadcast'):
+                        profile['broadcast'] = profile_entity.broadcast
+                        profile['title'] = profile_entity.title
+                    if hasattr(profile_entity, 'first_name'):
+                        profile['first_name'] = profile_entity.first_name
+                    if hasattr(profile_entity, 'last_name'):
+                        profile['last_name'] = profile_entity.last_name
+                    with open(cache_filename, 'w') as cache:
+                        json.dump(profile, cache, indent=4)
+
                 if hasattr(profile, 'broadcast'):
                     # This is channel or chat.
-                    profile_name = profile.title
+                    profile_name = profile.get('title', name)
                 else:
                     # This is user or bot.
-                    profile_name = ' '.join(list(filter(None, (profile.first_name, profile.last_name))))
+                    profile_name = ' '.join(list(filter(None, (profile.get('first_name', ''), profile.get('last_name', '')))))
                     if not profile_name.strip():
-                        profile_name = profile.username
+                        profile_name = profile.get('username', name)
 
-                profile_photo = await client.download_profile_photo(name, f'/tmp/files/img/{name}.jpg', download_big=False)
+                # Try cache.
+                img_filename = f'{IMAGES_DIR}/{name}.jpg'
+                if not os.path.exists(img_filename):
+                    profile_photo = await client.download_profile_photo(name, img_filename, download_big=False)
+
                 return {
                     'profile_photo': f'{name}.jpg',
                     'profile_name': profile_name,
@@ -155,12 +189,19 @@ async def redirect(request):
 
 
 app = web.Application()
-app.add_routes([web.get('/', index, name='index'),
-                web.post('/', index, name='index'),
-                web.get('/{name}', redirect, name='account'),
-                web.get('/joinchat/{code}', redirect, name='joinchat'),
-                web.get('/{name}/{post}', redirect, name='post')])
+routes = [
+    web.get('/', index, name='index'),
+    web.post('/', index, name='index'),
+    web.get('/{name}', redirect, name='account'),
+    web.get('/joinchat/{code}', redirect, name='joinchat'),
+    web.get('/{name}/{post}', redirect, name='post'),
+]
 
+if DEVELOPMENT == 'True':
+    routes.append(web.static('/static/', pathlib.Path(__file__).parent / 'static', name='static'))
+    routes.append(web.static('/files/img/', pathlib.Path(__file__).parent / '../img', name='img'))
+
+app.add_routes(routes)
 setup_jinja(app)
 
 if __name__ == '__main__':

@@ -12,12 +12,17 @@ services:
       - MTPROXY_PORT=${MTPROXY_PORT}
       - MTPROXY_SECRET=${MTPROXY_SECRET}
       - SHOW_INFO=${SHOW_INFO}
+      - IMAGES_DIR=${IMAGES_DIR}
+      - SESSIONS_DIR=${SESSIONS_DIR}
+      - CACHE_DIR=${CACHE_DIR}
+      - DEVELOPMENT=${DEVELOPMENT}
     image: tg-redirect
     hostname: tg-redirect
     container_name: tg-redirect
     restart: always
     volumes:
-      - ./files/img:/tmp/files/img
-      - ./sessions:/tmp/sessions
+      - ./files/img:${IMAGES_DIR}
+      - ./sessions:${SESSIONS_DIR}
+      - ./cache:${CACHE_DIR}
     ports:
       - 127.0.0.1:8000:8080

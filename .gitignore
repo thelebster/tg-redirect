@@ -6,3 +6,6 @@
 *.session
 *.session-journal
 files
+img
+sessions
+cache
