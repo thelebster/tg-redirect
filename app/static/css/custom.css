@@ -38,3 +38,7 @@ footer a{
        url('../font/roboto-v20-cyrillic_latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
        url('../font/roboto-v20-cyrillic_latin-regular.svg#Roboto') format('svg'); /* Legacy iOS */
 }
+
+input#url {
+    font-size: 16px;
+}
