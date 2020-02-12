@@ -27,6 +27,7 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 MTPROXY_HOST = os.getenv('MTPROXY_HOST')
 MTPROXY_PORT = os.getenv('MTPROXY_PORT')
 MTPROXY_SECRET = os.getenv('MTPROXY_SECRET')
+MTPROXY_ENABLED = False if MTPROXY_HOST is None or MTPROXY_PORT is None or MTPROXY_SECRET is None else True
 
 SHOW_INFO = os.getenv('SHOW_INFO', 'False')
 
@@ -111,20 +112,23 @@ async def redirect(request):
         if name is not None and SHOW_INFO == 'True':
             try:
                 session_id = str(uuid.uuid1())
-                client = TelegramClient(
-                    f'/tmp/sessions/{session_id}',
-                    TELEGRAM_API_ID,
-                    TELEGRAM_API_HASH,
-                    # Use one of the available connection modes.
-                    # Normally, this one works with most proxies.
-                    connection=connection.ConnectionTcpMTProxyRandomizedIntermediate,
-                    # Then, pass the proxy details as a tuple:
-                    #     (host name, port, proxy secret)
-                    #
-                    # If the proxy has no secret, the secret must be:
-                    #     '00000000000000000000000000000000'
-                    proxy=(MTPROXY_HOST, int(MTPROXY_PORT), MTPROXY_SECRET)
-                )
+                if MTPROXY_ENABLED:
+                    client = TelegramClient(
+                        f'/tmp/sessions/{session_id}',
+                        TELEGRAM_API_ID,
+                        TELEGRAM_API_HASH,
+                        # Use one of the available connection modes.
+                        # Normally, this one works with most proxies.
+                        connection=connection.ConnectionTcpMTProxyRandomizedIntermediate,
+                        # Then, pass the proxy details as a tuple:
+                        #     (host name, port, proxy secret)
+                        #
+                        # If the proxy has no secret, the secret must be:
+                        #     '00000000000000000000000000000000'
+                        proxy=(MTPROXY_HOST, int(MTPROXY_PORT), MTPROXY_SECRET)
+                    )
+                else:
+                    client = TelegramClient(f'/tmp/sessions/{session_id}', TELEGRAM_API_ID, TELEGRAM_API_HASH)
                 await client.start(bot_token=TELEGRAM_BOT_TOKEN)
                 profile = await client.get_entity(name)
                 if hasattr(profile, 'broadcast'):

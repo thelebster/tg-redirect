@@ -37,3 +37,7 @@ server {
   }
 }
 ```
+
+#### Disabling MTProxy
+
+Remove MTPROXY_* variables from .env to disable MTProxy.
