@@ -22,7 +22,10 @@ server {
   error_log /var/log/nginx/error.log;
   access_log /var/log/nginx/access.log;
 
+  error_page 404 /404.html;
+
   location / {
+    proxy_intercept_errors on;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_pass http://tg-redirect;
@@ -47,6 +50,10 @@ server {
   # Ignore any requests to *.php, because only a-z, 0-9, and underscores allowed.
   location ~ \.php$ {
     return 404;
+  }
+
+  location = /404.html {
+    root /srv/tg-redirect/app/static;
   }
 }
 ```
