@@ -36,6 +36,14 @@ server {
    root /srv/tg-redirect/app;
   }
 
+  location /robots.txt {
+    root /srv/tg-redirect/app/static;
+  }
+
+  location /favicon.ico {
+    root /srv/tg-redirect/app/static;
+  }
+
   # Ignore any requests to *.php, because only a-z, 0-9, and underscores allowed.
   location ~ \.php$ {
     return 404;
