@@ -8,7 +8,9 @@ import jinja2
 import os
 import json
 from urllib.parse import urlparse
-from telethon import TelegramClient, connection, tl
+from telethon import TelegramClient, connection
+from telethon.tl.functions.users import GetFullUserRequest
+from telethon.tl.functions.channels import GetFullChannelRequest
 import logging
 import uuid
 
@@ -146,6 +148,12 @@ async def redirect(request):
                 else:
                     profile_entity = await client.get_entity(name)
                     logger.debug(profile_entity)
+                    if hasattr(profile_entity, 'broadcast'):
+                        extenede_profile_entity = await client(GetFullChannelRequest(name))
+                        logger.debug(extenede_profile_entity)
+                    else:
+                        extenede_profile_entity = await client(GetFullUserRequest(name))
+                        logger.debug(extenede_profile_entity)
 
                     profile = {}
                     profile['id'] = profile_entity.id
@@ -159,6 +167,11 @@ async def redirect(request):
                         profile['first_name'] = profile_entity.first_name
                     if hasattr(profile_entity, 'last_name'):
                         profile['last_name'] = profile_entity.last_name
+                    if hasattr(extenede_profile_entity, 'about'):
+                        profile['about'] = extenede_profile_entity.about
+                    if hasattr(extenede_profile_entity, 'full_chat'):
+                        if hasattr(extenede_profile_entity.full_chat, 'about'):
+                            profile['about'] = extenede_profile_entity.full_chat.about
                     with open(cache_filename, 'w') as cache:
                         json.dump(profile, cache, indent=4)
 
@@ -171,6 +184,8 @@ async def redirect(request):
                     if not profile_name.strip():
                         profile_name = profile.get('username', name)
 
+                profile_descrtiption = profile.get('about', '')
+
                 # Try cache.
                 img_filename = f'{IMAGES_DIR}/{name}.jpg'
                 if not os.path.exists(img_filename):
@@ -179,6 +194,7 @@ async def redirect(request):
                 return {
                     'profile_photo': f'{name}.jpg',
                     'profile_name': profile_name,
+                    'profile_descrtiption': profile_descrtiption,
                     'location': location,
                     'base_path': f'https://{DOMAIN_NAME}',
                 }
