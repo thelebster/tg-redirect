@@ -211,9 +211,9 @@ app = web.Application()
 routes = [
     web.get('/', index, name='index'),
     web.post('/', index, name='index'),
-    web.get('/{name}', redirect, name='account'),
+    web.get(r'/{name:[a-zA-Z0-9_]+}', redirect, name='account'),
     web.get('/joinchat/{code}', redirect, name='joinchat'),
-    web.get('/{name}/{post}', redirect, name='post'),
+    web.get(r'/{name:[a-zA-Z0-9_]+}/{post:\d+}', redirect, name='post'),
 ]
 
 if DEVELOPMENT == 'True':
