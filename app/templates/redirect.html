@@ -13,7 +13,7 @@
     <meta property="og:title" content="{{ profile_name if profile_name else '' }}">
     <meta property="og:image" content="{{ base_url ~'/files/img/' ~profile_photo if profile_photo else '' }}">
     <meta property="og:site_name" content="Telegram">
-    <meta property="og:description" content="{{ profile_descrtiption if profile_descrtiption else '' }}">
+    <meta property="og:description" content="{{ profile_status if profile_status else '' }}">
     <meta property="twitter:title" content="{{ profile_name if profile_name else '' }}">
     <meta property="twitter:image" content="{{ base_url ~'/files/img/' ~profile_photo if profile_photo else '' }}">
     <meta property="twitter:site" content="@Telegram">
@@ -25,7 +25,7 @@
     <meta property="al:android:package" content="org.telegram.messenger">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@Telegram">
-    <meta name="twitter:description" content="{{ profile_descrtiption if profile_descrtiption else '' }}">
+    <meta name="twitter:description" content="{{ profile_status if profile_status else '' }}">
     <meta name="twitter:app:name:iphone" content="Telegram Messenger">
     <meta name="twitter:app:id:iphone" content="686449807">
     <meta name="twitter:app:url:iphone" content="{{ location }}">
@@ -63,8 +63,8 @@
                         {% if profile_name %}
                         <h5>{{ profile_name }}</h5>
                         {% endif %}
-                        {% if profile_descrtiption %}
-                        <p class="grey-text">{{ profile_descrtiption|replace("\n", "<br/>")|safe }}</p>
+                        {% if profile_status %}
+                        <p class="grey-text">{{ profile_status|replace("\n", "<br/>")|safe }}</p>
                         {% endif %}
                         {% if message_text %}
                         <div class="message grey-text left-align">{{ message_text|replace("\n", "<br/>")|safe }}</div>
