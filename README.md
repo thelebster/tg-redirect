@@ -49,8 +49,8 @@ server {
     root /srv/tg-redirect/app/static;
   }
 
-  location /favicon.ico {
-    root /srv/tg-redirect/app/static;
+  location /static/favicon.ico {
+    root /srv/tg-redirect/app;
   }
 
   # Ignore any requests to *.php, because only a-z, 0-9, and underscores allowed.
