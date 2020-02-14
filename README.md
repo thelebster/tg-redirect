@@ -1,6 +1,8 @@
-# Переадресация Телеграм
+# Telegram forwarding service
 
-Сервис позволяет обойти блокировку и дать рабочую ссылку на Телеграм аккаунт, канал или чат.
+On April 2018, Telegram was banned in Russia. This service allows you to share a working link to the Telegram account, channel or chat with an informative preview page.
+
+Сервис для переадресации Телеграм позволяет обойти блокировку и дать рабочую ссылку на Телеграм аккаунт, канал или чат.
 
 ### Build and deploy
 
