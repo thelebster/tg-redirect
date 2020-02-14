@@ -53,7 +53,12 @@
                     <div class="col s12 center">
                         <!---->
                         {% if profile_photo %}
-                        <img src="/files/img/{{ profile_photo }}" />
+                        <img
+                                src="/files/img/{{ profile_photo }}"
+                                class="circle"
+                                title="{{ profile_name if profile_name else profile_photo }}"
+                                alt="{{ profile_name if profile_name else profile_photo }}"
+                        />
                         {% endif %}
                         {% if profile_name %}
                         <h5>{{ profile_name }}</h5>
