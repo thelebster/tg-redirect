@@ -4,6 +4,10 @@ On April 2018, Telegram was banned in Russia. This service allows you to share a
 
 Сервис для переадресации Телеграм позволяет обойти блокировку и дать рабочую ссылку на Телеграм аккаунт, канал или чат.
 
+![alt text][screenshot]
+
+Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram channel.
+
 ### Build and deploy
 
 ```
@@ -63,3 +67,5 @@ server {
 #### Disabling MTProxy
 
 Remove MTPROXY_* variables from .env to disable MTProxy.
+
+[screenshot]: common/images/ohmypy-post-screenshot.png "Page preview for Oh My Py Telegram channel (https://t.me/ohmypy)"
