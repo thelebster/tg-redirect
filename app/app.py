@@ -136,55 +136,80 @@ async def redirect(request):
                     )
                 else:
                     client = TelegramClient(f'{SESSIONS_DIR}/{session_id}', TELEGRAM_API_ID, TELEGRAM_API_HASH)
+
                 await client.start(bot_token=TELEGRAM_BOT_TOKEN)
+                # Enabling HTML as the default format
+                client.parse_mode = 'html'
 
                 # Try cache.
                 cache_filename = f'{CACHE_DIR}/{name}.json'
-                # if post is not None:
-                #     cache_filename = f'{CACHE_DIR}/{name}-{post}.json'
+                if post is not None:
+                    cache_filename = f'{CACHE_DIR}/{name}-{post}.json'
+
+                entity = {}
                 if os.path.exists(cache_filename):
                     with open(cache_filename) as cache:
-                        profile = json.load(cache)
+                        entity = json.load(cache)
                 else:
-                    profile_entity = await client.get_entity(name)
-                    logger.debug(profile_entity)
-                    if hasattr(profile_entity, 'broadcast'):
-                        extenede_profile_entity = await client(GetFullChannelRequest(name))
-                        logger.debug(extenede_profile_entity)
+                    if post is not None:
+                        message_entity = await client.get_messages(name, ids=int(post))
+                        logger.debug(message_entity)
+                        entity['message_id'] = message_entity.id
+                        if hasattr(message_entity, 'message'):
+                            entity['message_text'] = message_entity.message
+                        if hasattr(message_entity, 'raw_text'):
+                            entity['message_raw_text'] = message_entity.raw_text
+                        if hasattr(message_entity, 'text'):
+                            entity['message_html'] = message_entity.text
+                        if hasattr(message_entity, 'date'):
+                            entity['message_date'] = str(message_entity.date)
+                        if hasattr(message_entity, 'chat'):
+                            entity['id'] = str(message_entity.chat.id)
+                            entity['username'] = str(message_entity.chat.username)
+                            if hasattr(message_entity.chat, 'broadcast'):
+                                entity['broadcast'] = message_entity.chat.broadcast
+                                entity['title'] = message_entity.chat.title
                     else:
-                        extenede_profile_entity = await client(GetFullUserRequest(name))
-                        logger.debug(extenede_profile_entity)
+                        profile_entity = await client.get_entity(name)
+                        logger.debug(profile_entity)
+                        if hasattr(profile_entity, 'broadcast'):
+                            extenede_profile_entity = await client(GetFullChannelRequest(name))
+                            logger.debug(extenede_profile_entity)
+                        else:
+                            extenede_profile_entity = await client(GetFullUserRequest(name))
+                            logger.debug(extenede_profile_entity)
 
-                    profile = {}
-                    profile['id'] = profile_entity.id
-                    if hasattr(profile_entity, 'bot'):
-                        profile['bot'] = profile_entity.bot
-                    profile['username'] = profile_entity.username
-                    if hasattr(profile_entity, 'broadcast'):
-                        profile['broadcast'] = profile_entity.broadcast
-                        profile['title'] = profile_entity.title
-                    if hasattr(profile_entity, 'first_name'):
-                        profile['first_name'] = profile_entity.first_name
-                    if hasattr(profile_entity, 'last_name'):
-                        profile['last_name'] = profile_entity.last_name
-                    if hasattr(extenede_profile_entity, 'about'):
-                        profile['about'] = extenede_profile_entity.about
-                    if hasattr(extenede_profile_entity, 'full_chat'):
-                        if hasattr(extenede_profile_entity.full_chat, 'about'):
-                            profile['about'] = extenede_profile_entity.full_chat.about
+                        entity['id'] = profile_entity.id
+                        if hasattr(profile_entity, 'bot'):
+                            entity['bot'] = profile_entity.bot
+                        entity['username'] = profile_entity.username
+                        if hasattr(profile_entity, 'broadcast'):
+                            entity['broadcast'] = profile_entity.broadcast
+                            entity['title'] = profile_entity.title
+                        if hasattr(profile_entity, 'first_name'):
+                            entity['first_name'] = profile_entity.first_name
+                        if hasattr(profile_entity, 'last_name'):
+                            entity['last_name'] = profile_entity.last_name
+                        if hasattr(extenede_profile_entity, 'about'):
+                            entity['about'] = extenede_profile_entity.about
+                        if hasattr(extenede_profile_entity, 'full_chat'):
+                            if hasattr(extenede_profile_entity.full_chat, 'about'):
+                                entity['about'] = extenede_profile_entity.full_chat.about
+
                     with open(cache_filename, 'w') as cache:
-                        json.dump(profile, cache, indent=4)
+                        json.dump(entity, cache, indent=4)
 
-                if 'broadcast' in profile:
+                if 'broadcast' in entity:
                     # This is channel or chat.
-                    profile_name = profile.get('title', name)
+                    profile_name = entity.get('title', name)
                 else:
                     # This is user or bot.
-                    profile_name = ' '.join(list(filter(None, (profile.get('first_name', ''), profile.get('last_name', '')))))
+                    profile_name = ' '.join(list(filter(None, (entity.get('first_name', ''), entity.get('last_name', '')))))
                     if not profile_name.strip():
-                        profile_name = profile.get('username', name)
+                        profile_name = entity.get('username', name)
 
-                profile_descrtiption = profile.get('about', '')
+                profile_descrtiption = entity.get('about', '')
+                message_text = entity.get('message_html', '')
 
                 # Try cache.
                 img_filename = f'{IMAGES_DIR}/{name}.jpg'
@@ -195,6 +220,7 @@ async def redirect(request):
                     'profile_photo': f'{name}.jpg',
                     'profile_name': profile_name,
                     'profile_descrtiption': profile_descrtiption,
+                    'message_text': message_text,
                     'location': location,
                     'base_path': f'https://{DOMAIN_NAME}',
                 }

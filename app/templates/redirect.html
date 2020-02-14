@@ -59,7 +59,10 @@
                         <h5>{{ profile_name }}</h5>
                         {% endif %}
                         {% if profile_descrtiption %}
-                        <p class="grey-text">{{ profile_descrtiption }}</p>
+                        <p class="grey-text">{{ profile_descrtiption|replace("\n", "<br/>")|safe }}</p>
+                        {% endif %}
+                        {% if message_text %}
+                        <div class="message grey-text left-align">{{ message_text|replace("\n", "<br/>")|safe }}</div>
                         {% endif %}
                     </div>
                 </div>

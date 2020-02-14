@@ -46,3 +46,7 @@ input#url {
 .container.info {
   max-width: 550px;
 }
+
+.message.grey-text strong {
+    font-weight: bold !important;
+}
