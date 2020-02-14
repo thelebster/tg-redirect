@@ -175,7 +175,7 @@ async def redirect(request):
                     with open(cache_filename, 'w') as cache:
                         json.dump(profile, cache, indent=4)
 
-                if hasattr(profile, 'broadcast'):
+                if 'broadcast' in profile:
                     # This is channel or chat.
                     profile_name = profile.get('title', name)
                 else:
