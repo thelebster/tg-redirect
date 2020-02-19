@@ -13,6 +13,7 @@ from telethon.tl.functions.users import GetFullUserRequest
 from telethon.tl.functions.channels import GetFullChannelRequest
 import logging
 import uuid
+import re
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
@@ -208,8 +209,14 @@ async def redirect(request):
                     if not profile_name.strip():
                         profile_name = entity.get('username', name)
 
-                profile_status = entity.get('about', '')
-                message_text = entity.get('message_html', '')
+                profile_status = re.sub(
+                    '(^@|\s@)([a-zA-Z0-9_]+)(\s|$)',
+                    ' <a href="tg://resolve?domain=\\2">@\\2</a>\\3',
+                    entity.get('about', '')).strip()
+                message_text = re.sub(
+                    '(^@|\s@)([a-zA-Z0-9_]+)(\s|$)',
+                    ' <a href="tg://resolve?domain=\\2">@\\2</a>\\3',
+                    entity.get('message_html', '')).strip()
 
                 # Try cache.
                 img_filename = f'{IMAGES_DIR}/{name}.jpg'
