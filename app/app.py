@@ -14,6 +14,7 @@ from telethon.tl.functions.channels import GetFullChannelRequest
 import logging
 import uuid
 import re
+from bs4 import BeautifulSoup
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
@@ -95,6 +96,41 @@ async def redirect(request):
     if route_name == 'joinchat':
         code = request.match_info.get('code')
         location = f'tg://join?invite={code}'
+        # The API access for bot users is restricted. The method you tried to invoke cannot be executed as a bot (caused by CheckChatInviteRequest)
+        # Parse t.me because to bot has no access.
+        url = f'https://t.me/joinchat/{code}'
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                html = await response.text()
+                soup = BeautifulSoup(html, 'html.parser')
+                profile_image = soup.find(name='img', attrs={'class': 'tgme_page_photo_image'})
+                profile_image_src = profile_image.attrs.get('src')
+                try:
+                    async with session.get(profile_image_src) as response:
+                        chunk_size = 10
+                        img_filename = f'{IMAGES_DIR}/{code}.jpg'
+                        with open(img_filename, 'wb') as f:
+                            while True:
+                                chunk = await response.content.read(chunk_size)
+                                if not chunk:
+                                    break
+                                f.write(chunk)
+                except Exception as err:
+                    logger.error(err)
+                    pass
+                page_title = soup.find(name='div', attrs={'class': 'tgme_page_title'})
+                profile_name = page_title.contents[0].strip()
+                page_description = soup.find(name='div', attrs={'class': 'tgme_page_description'})
+                profile_status = page_description.contents[0].strip()
+                return {
+                    'profile_photo': f'{code}.jpg',
+                    'profile_name': profile_name,
+                    'profile_status': profile_status,
+                    'location': location,
+                    'base_path': f'https://{DOMAIN_NAME}',
+                }
+                pass
+
 
     if route_name == 'post':
         name = request.match_info.get('name')
