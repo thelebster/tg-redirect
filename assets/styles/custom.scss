@@ -30,7 +30,11 @@ input#url {
 }
 
 .container.info {
-  max-width: 550px;
+  max-width: 540px;
+}
+
+footer .container {
+  max-width: 580px;
 }
 
 .message.grey-text strong {
@@ -53,4 +57,14 @@ nav.nav-center ul li a {
 
 .no-shadow {
   box-shadow: none !important;
+}
+
+img.avatar {
+  max-width: 120px;
+}
+
+@media screen and (min-width: 769px) {
+  img.avatar {
+    max-width: 160px;
+  }
 }
