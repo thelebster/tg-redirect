@@ -86,6 +86,33 @@ async def index(request):
         return {}
 
 
+async def download_profile_image(url, name):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            chunk_size = 10
+            img_filename = f'{IMAGES_DIR}/{name}.jpg'
+            with open(img_filename, 'wb') as f:
+                while True:
+                    chunk = await response.content.read(chunk_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+
+
+# Parse t.me because the API access for bot users is restricted for private channels.
+async def parse_channel_info(url, channel_name):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            html = await response.text()
+            soup = BeautifulSoup(html, 'html.parser')
+            profile_image = soup.find(name='img', attrs={'class': 'tgme_page_photo_image'}).get('src', None)
+            page_title = soup.find(name='div', attrs={'class': 'tgme_page_title'})
+            profile_name = page_title.contents[0].strip()
+            page_description = soup.find(name='div', attrs={'class': 'tgme_page_description'})
+            profile_status = page_description.contents[0].strip()
+            return profile_name, profile_status, profile_image
+
+
 @aiohttp_jinja2.template('redirect.html')
 async def redirect(request):
     route_name = request.match_info.route.name
@@ -96,41 +123,20 @@ async def redirect(request):
     if route_name == 'joinchat':
         code = request.match_info.get('code')
         location = f'tg://join?invite={code}'
-        # The API access for bot users is restricted. The method you tried to invoke cannot be executed as a bot (caused by CheckChatInviteRequest)
-        # Parse t.me because to bot has no access.
         url = f'https://t.me/joinchat/{code}'
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                html = await response.text()
-                soup = BeautifulSoup(html, 'html.parser')
-                profile_image = soup.find(name='img', attrs={'class': 'tgme_page_photo_image'})
-                profile_image_src = profile_image.attrs.get('src')
-                try:
-                    async with session.get(profile_image_src) as response:
-                        chunk_size = 10
-                        img_filename = f'{IMAGES_DIR}/{code}.jpg'
-                        with open(img_filename, 'wb') as f:
-                            while True:
-                                chunk = await response.content.read(chunk_size)
-                                if not chunk:
-                                    break
-                                f.write(chunk)
-                except Exception as err:
-                    logger.error(err)
-                    pass
-                page_title = soup.find(name='div', attrs={'class': 'tgme_page_title'})
-                profile_name = page_title.contents[0].strip()
-                page_description = soup.find(name='div', attrs={'class': 'tgme_page_description'})
-                profile_status = page_description.contents[0].strip()
-                return {
-                    'profile_photo': f'{code}.jpg',
-                    'profile_name': profile_name,
-                    'profile_status': profile_status,
-                    'location': location,
-                    'base_path': f'https://{DOMAIN_NAME}',
-                }
-                pass
-
+        profile_info = await parse_channel_info(url, code)
+        profile_name, profile_status, profile_image = profile_info
+        try:
+            download_profile_image(url, code)
+        except Exception as err:
+            logger.error(err)
+        return {
+            'profile_photo': f'{code}.jpg',
+            'profile_name': profile_name,
+            'profile_status': profile_status,
+            'location': location,
+            'base_path': f'https://{DOMAIN_NAME}',
+        }
 
     if route_name == 'post':
         name = request.match_info.get('name')
