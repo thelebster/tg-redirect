@@ -35,6 +35,7 @@ MTPROXY_ENABLED = False if MTPROXY_HOST is None or MTPROXY_PORT is None or MTPRO
 
 SHOW_INFO = os.getenv('SHOW_INFO', 'False')
 DEVELOPMENT = os.getenv('DEVELOPMENT', 'False')
+USE_PARSER = os.getenv('USE_PARSER', 'True')
 
 IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
 SESSIONS_DIR = os.getenv('SESSIONS_DIR', '/tmp/sessions')
@@ -100,7 +101,7 @@ async def download_profile_image(url, name):
 
 
 # Parse t.me because the API access for bot users is restricted for private channels.
-async def parse_channel_info(url, channel_name):
+async def parse_channel_info(url):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             html = await response.text()
@@ -109,8 +110,18 @@ async def parse_channel_info(url, channel_name):
             page_title = soup.find(name='div', attrs={'class': 'tgme_page_title'})
             profile_name = page_title.contents[0].strip()
             page_description = soup.find(name='div', attrs={'class': 'tgme_page_description'})
-            profile_status = page_description.contents[0].strip()
+            profile_status = page_description.decode_contents(formatter="html")
             return profile_name, profile_status, profile_image
+
+
+async def parse_embed(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            html = await response.text()
+            soup = BeautifulSoup(html, 'html.parser')
+            widget_message_text = soup.find(name='div', attrs={'class': 'tgme_widget_message_text'})
+            message_text = widget_message_text.decode_contents(formatter="html")
+            return message_text
 
 
 @aiohttp_jinja2.template('redirect.html')
@@ -119,24 +130,12 @@ async def redirect(request):
     if route_name == 'account':
         name = request.match_info.get('name')
         location = f'tg://resolve?domain={name}'
+        tme_url = f'https://t.me/{name}'
 
     if route_name == 'joinchat':
         code = request.match_info.get('code')
         location = f'tg://join?invite={code}'
-        url = f'https://t.me/joinchat/{code}'
-        profile_info = await parse_channel_info(url, code)
-        profile_name, profile_status, profile_image = profile_info
-        try:
-            download_profile_image(url, code)
-        except Exception as err:
-            logger.error(err)
-        return {
-            'profile_photo': f'{code}.jpg',
-            'profile_name': profile_name,
-            'profile_status': profile_status,
-            'location': location,
-            'base_path': f'https://{DOMAIN_NAME}',
-        }
+        tme_url = f'https://t.me/joinchat/{code}'
 
     if route_name == 'post':
         name = request.match_info.get('name')
@@ -145,6 +144,8 @@ async def redirect(request):
             return {}
 
         location = f'tg://resolve?domain={name}&post={post}'
+        tme_url = f'https://t.me/{name}'
+        tme_post_url = f'https://t.me/{name}/{post}?embed=1'
 
     if location is None:
         return {}
@@ -152,7 +153,39 @@ async def redirect(request):
         try:
             name
         except NameError:
-            name = None
+            name = code
+
+        if USE_PARSER == 'True':
+            try:
+                profile_info = await parse_channel_info(tme_url)
+                profile_name, profile_status, profile_image = profile_info
+                await download_profile_image(profile_image, name)
+                response = {
+                    'profile_photo': f'{name}.jpg',
+                    'profile_name': profile_name,
+                    'location': location,
+                    'base_path': f'https://{DOMAIN_NAME}',
+                }
+                try:
+                    tme_post_url
+                except NameError as err:
+                    tme_post_url = None
+
+                if tme_post_url is not None:
+                    try:
+                        message_text = await parse_embed(tme_post_url)
+                        response['message_text'] = message_text
+                    except Exception as err:
+                        logger.error(err)
+                        response['profile_status'] = profile_status
+
+                return response
+            except Exception as err:
+                logger.error(err)
+                return {
+                    'location': location,
+                    'base_path': f'https://{DOMAIN_NAME}',
+                }
 
         try:
             post
