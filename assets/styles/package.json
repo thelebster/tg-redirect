@@ -1,0 +1,13 @@
+{
+  "name": "tgramapp-css",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "css-build": "node-sass --omit-source-map-url --output-style compressed style.scss ../../app/static/css/style.css",
+    "css-watch": "npm run css-build -- --watch",
+    "start": "npm run css-watch"
+  },
+  "dependencies": {
+    "materialize-css": "^1.0.0"
+  }
+}
