@@ -18,6 +18,7 @@ services:
       - CACHE_DIR=${CACHE_DIR}
       - DEVELOPMENT=${DEVELOPMENT}
       - BLACKLIST=${BLACKLIST}
+      - SITE_EMAIL=${SITE_EMAIL}
     image: tg-redirect
     hostname: tg-redirect
     container_name: tg-redirect
