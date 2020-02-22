@@ -110,7 +110,7 @@ async def parse_channel_info(url):
             page_title = soup.find(name='div', attrs={'class': 'tgme_page_title'})
             profile_name = page_title.contents[0].strip()
             page_description = soup.find(name='div', attrs={'class': 'tgme_page_description'})
-            profile_status = page_description.decode_contents(formatter="html")
+            profile_status = page_description.decode_contents(formatter="html") if page_description is not None else ''
             return profile_name, profile_status, profile_image
 
 
