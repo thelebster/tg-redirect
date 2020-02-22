@@ -50,3 +50,19 @@ input#url {
 .message.grey-text strong {
     font-weight: bold !important;
 }
+
+nav.nav-center ul {
+    text-align: center;
+}
+nav.nav-center ul li {
+    display: inline;
+    float: none;
+}
+nav.nav-center ul li a {
+    display: inline-block;
+    color: #039be5;
+}
+
+.no-shadow {
+    box-shadow: none !important;
+}
