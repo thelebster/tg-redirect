@@ -41,7 +41,7 @@ IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
 SESSIONS_DIR = os.getenv('SESSIONS_DIR', '/tmp/sessions')
 CACHE_DIR = os.getenv('CACHE_DIR', '/tmp/cache')
 
-BLACKLIST = os.getenv('BLACKLIST', [])
+BLACKLIST = os.getenv('BLACKLIST', '')
 
 
 def setup_jinja(app):
@@ -69,12 +69,16 @@ async def index(request):
             path = url.path.split('/')
             path.pop(0)
 
-            redirect_url = f'https://{DOMAIN_NAME}/{path[0]}'
+            redirect_path = f'{path[0]}'
             if len(path) == 2:
-                redirect_url = f'https://{DOMAIN_NAME}/{path[0]}/{path[1]}'
+                redirect_path = f'{path[0]}/{path[1]}'
                 if path[0] != 'joinchat' and not path[1].isnumeric():
                     raise Exception('Номер сообщения должен быть числом.')
 
+            if blacklisted(redirect_path):
+                raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
+
+            redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}'
             return {
                 'source_url': source_url,
                 'redirect_url': redirect_url,
@@ -126,16 +130,29 @@ async def parse_embed(url):
             return message_text
 
 
+def blacklisted(path):
+    blacklist = list(map(lambda str: str.strip().lower(), BLACKLIST.split(',')))
+    if path.lower() in blacklist:
+        return True
+    return False
+
+
 @aiohttp_jinja2.template('redirect.html')
 async def redirect(request):
     route_name = request.match_info.route.name
     if route_name == 'account':
         name = request.match_info.get('name')
+        if blacklisted(name):
+            # raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
+            return web.Response(status=451)
         location = f'tg://resolve?domain={name}'
         tme_url = f'https://t.me/{name}'
 
     if route_name == 'joinchat':
         code = request.match_info.get('code')
+        if blacklisted(f'joinchat/{code}'):
+            # raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
+            return web.Response(status=451)
         location = f'tg://join?invite={code}'
         tme_url = f'https://t.me/joinchat/{code}'
 
@@ -144,7 +161,9 @@ async def redirect(request):
         post = request.match_info.get('post')
         if not post.isnumeric():
             return {}
-
+        if blacklisted(f'{name}/{post}'):
+            # raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
+            return web.Response(status=451)
         location = f'tg://resolve?domain={name}&post={post}'
         tme_url = f'https://t.me/{name}'
         tme_post_url = f'https://t.me/{name}/{post}?embed=1'
