@@ -65,7 +65,8 @@
                         {% if profile_name %}
                         <h5>{{ profile_name }}</h5>
                         {% endif %}
-                        {% if profile_status %}
+                        {% set type = 'post' if message_text else 'channel' %}
+                        {% if profile_status and type == 'channel' %}
                         <p class="grey-text">{{ profile_status|replace("\n", "<br/>")|safe }}</p>
                         {% endif %}
                         {% if message_text %}

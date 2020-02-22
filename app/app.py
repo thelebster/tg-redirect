@@ -165,6 +165,7 @@ async def redirect(request):
                     'profile_name': profile_name,
                     'location': location,
                     'base_path': f'https://{DOMAIN_NAME}',
+                    'profile_status': profile_status,
                 }
                 try:
                     tme_post_url
@@ -177,7 +178,6 @@ async def redirect(request):
                         response['message_text'] = message_text
                     except Exception as err:
                         logger.error(err)
-                        response['profile_status'] = profile_status
 
                 return response
             except Exception as err:
