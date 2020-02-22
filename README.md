@@ -31,6 +31,16 @@ server {
   error_page 404 /404.html;
   error_page 451 /451.html;
 
+  gzip on;
+  gzip_disable "msie6";
+
+  gzip_vary on;
+  gzip_proxied any;
+  gzip_comp_level 6;
+  gzip_buffers 16 8k;
+  gzip_http_version 1.1;
+  gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
   location / {
     proxy_intercept_errors on;
     proxy_set_header Host $host;
