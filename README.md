@@ -69,3 +69,15 @@ server {
 Remove MTPROXY_* variables from .env to disable MTProxy.
 
 [screenshot]: common/images/ohmypy-post-screenshot.png "Page preview for Oh My Py Telegram channel (https://t.me/ohmypy)"
+
+## Changelog
+
+**Feb 22, 2020**
+* Parsing the t.me/username page directly to get details about the channel invitation.
+
+**Feb 13, 2020**
+* Use Telergam API to fetch information about channel, like channel name, description and image.
+* Serving static resources via Nginx.
+
+**Feb 12, 2020** 
+* Basic implementation. Show simple preview page with auto-redirect after 500 ms and a button. 

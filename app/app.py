@@ -41,6 +41,8 @@ IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
 SESSIONS_DIR = os.getenv('SESSIONS_DIR', '/tmp/sessions')
 CACHE_DIR = os.getenv('CACHE_DIR', '/tmp/cache')
 
+BLACKLIST = os.getenv('BLACKLIST', [])
+
 
 def setup_jinja(app):
     loader = jinja2.FileSystemLoader(str(TEMPLATES_ROOT))
