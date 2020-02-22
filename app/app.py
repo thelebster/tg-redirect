@@ -76,7 +76,7 @@ async def index(request):
                     raise Exception('Номер сообщения должен быть числом.')
 
             if blacklisted(redirect_path):
-                raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
+                raise Exception('Канал заблокирован.')
 
             redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}'
             return {
@@ -143,7 +143,6 @@ async def redirect(request):
     if route_name == 'account':
         name = request.match_info.get('name')
         if blacklisted(name):
-            # raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
             return web.Response(status=451)
         location = f'tg://resolve?domain={name}'
         tme_url = f'https://t.me/{name}'
@@ -151,7 +150,6 @@ async def redirect(request):
     if route_name == 'joinchat':
         code = request.match_info.get('code')
         if blacklisted(f'joinchat/{code}'):
-            # raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
             return web.Response(status=451)
         location = f'tg://join?invite={code}'
         tme_url = f'https://t.me/joinchat/{code}'
@@ -162,7 +160,6 @@ async def redirect(request):
         if not post.isnumeric():
             return {}
         if blacklisted(f'{name}/{post}'):
-            # raise Exception('Канал заблокирован ¯\_(ツ)_/¯')
             return web.Response(status=451)
         location = f'tg://resolve?domain={name}&post={post}'
         tme_url = f'https://t.me/{name}'

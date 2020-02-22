@@ -31,9 +31,9 @@ server {
   error_page 404 /404.html;
   error_page 451 /451.html;
 
+  # Enable gzip compression.
   gzip on;
   gzip_disable "msie6";
-
   gzip_vary on;
   gzip_proxied any;
   gzip_comp_level 6;
@@ -89,7 +89,8 @@ Remove MTPROXY_* variables from .env to disable MTProxy.
 
 **Feb 22, 2020**
 * Parsing the t.me/username page directly to get details about the channel invitation.
-* Checking if channel on a blacklist using comma separated values from the `BLACKLIST` environment variable. 
+* Checking if channel on a blacklist using comma separated values from the `BLACKLIST` environment variable.
+* Switch to [Materialize](https://materializecss.com/) scss.
 
 **Feb 13, 2020**
 * Use Telergam API to fetch information about channel, like channel name, description and image.
