@@ -63,6 +63,11 @@ async def index(request):
                 return {}
 
             url = urlparse(source_url)
+            default_scheme = 'https://'
+            default_hostname = 't.me/'
+            path = url.path.replace(default_hostname, '').strip("/")
+            url = ''.join([default_scheme, default_hostname, path])
+            url = urlparse(url)
             if url.netloc != 't.me':
                 raise Exception('Указан неверный адрес.')
 
@@ -70,6 +75,9 @@ async def index(request):
             path.pop(0)
 
             redirect_path = f'{path[0]}'
+            if re.match(r'^[a-zA-Z0-9_]+$', redirect_path) is None:
+                raise Exception('Имя пользователя может содержать буквы латинского алфавита (a–z), цифры (0–9) и символ подчеркивания (_).')
+
             if len(path) == 2:
                 redirect_path = f'{path[0]}/{path[1]}'
                 if path[0] != 'joinchat' and not path[1].isnumeric():
