@@ -78,9 +78,10 @@ async def index(request):
             if re.match(r'^[a-zA-Z0-9_]+$', redirect_path) is None:
                 raise Exception('Имя пользователя может содержать буквы латинского алфавита (a–z), цифры (0–9) и символ подчеркивания (_).')
 
+            fixed_paths = ['joinchat', 'addstickers']
             if len(path) == 2:
                 redirect_path = f'{path[0]}/{path[1]}'
-                if path[0] != 'joinchat' and not path[1].isnumeric():
+                if path[0] not in fixed_paths and not path[1].isnumeric():
                     raise Exception('Номер сообщения должен быть числом.')
 
             if blacklisted(redirect_path):
@@ -120,11 +121,15 @@ async def parse_channel_info(url):
         async with session.get(url) as response:
             html = await response.text()
             soup = BeautifulSoup(html, 'html.parser')
-            profile_image = soup.find(name='img', attrs={'class': 'tgme_page_photo_image'}).get('src', None)
+            page_photo_image = soup.find(name='img', attrs={'class': 'tgme_page_photo_image'})
+            profile_image = page_photo_image.get('src', None) if page_photo_image is not None else None
+
             page_title = soup.find(name='div', attrs={'class': 'tgme_page_title'})
             profile_name = page_title.contents[0].strip() if page_title is not None else ''
+
             page_description = soup.find(name='div', attrs={'class': 'tgme_page_description'})
             profile_status = page_description.decode_contents(formatter="html") if page_description is not None else ''
+
             page_extra = soup.find(name='div', attrs={'class': 'tgme_page_extra'})
             profile_extra = page_extra.decode_contents(formatter="html") if page_extra is not None else ''
             return profile_name, profile_status, profile_image, profile_extra
@@ -164,6 +169,13 @@ async def redirect(request):
         location = f'tg://join?invite={code}'
         tme_url = f'https://t.me/joinchat/{code}'
 
+    if route_name == 'addstickers':
+        name = request.match_info.get('name')
+        if blacklisted(f'addstickers/{name}'):
+            return web.Response(status=451)
+        location = f'tg://addstickers?set={name}'
+        tme_url = f'https://t.me/addstickers/{name}'
+
     if route_name == 'post':
         name = request.match_info.get('name')
         post = request.match_info.get('post')
@@ -187,14 +199,15 @@ async def redirect(request):
             try:
                 profile_info = await parse_channel_info(tme_url)
                 profile_name, profile_status, profile_image, profile_extra = profile_info
-                await download_profile_image(profile_image, name)
                 response = {
-                    'profile_photo': f'{name}.jpg',
                     'profile_name': profile_name,
                     'location': location,
                     'base_path': f'https://{DOMAIN_NAME}',
                     'profile_status': profile_status,
                 }
+                if profile_image is not None:
+                    await download_profile_image(profile_image, name)
+                    response['profile_photo'] = f'{name}.jpg'
                 try:
                     tme_post_url
                 except NameError as err:
@@ -352,6 +365,7 @@ routes = [
     web.post('/', index, name='index'),
     web.get(r'/{name:[a-zA-Z0-9_]+}', redirect, name='account'),
     web.get('/joinchat/{code}', redirect, name='joinchat'),
+    web.get('/addstickers/{name}', redirect, name='addstickers'),
     web.get(r'/{name:[a-zA-Z0-9_]+}/{post:\d+}', redirect, name='post'),
 ]
 
