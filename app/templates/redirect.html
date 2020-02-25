@@ -63,15 +63,23 @@
                                 alt="{{ profile_name if profile_name else profile_photo }}"
                         />
                         {% endif %}
+
                         {% if profile_name %}
                         <h5>{{ profile_name }}</h5>
                         {% endif %}
+
                         {% set type = 'post' if message_text else 'channel' %}
-                        {% if profile_status and type == 'channel' %}
-                        <p class="grey-text">{{ profile_status|replace("\n", "<br/>")|safe }}</p>
+
+                        {% if profile_extra and type == 'channel' %}
+                        <p class="grey-text extra"><span class="badge">{{ profile_extra }}</span></p>
                         {% endif %}
+
+                        {% if profile_status and type == 'channel' %}
+                        <p class="black-text">{{ profile_status|replace("\n", "<br/>")|safe }}</p>
+                        {% endif %}
+
                         {% if message_text %}
-                        <div class="message grey-text left-align">{{ message_text|replace("\n", "<br/>")|safe }}</div>
+                        <div class="message black-text left-align">{{ message_text|replace("\n", "<br/>")|safe }}</div>
                         {% endif %}
                     </div>
                 </div>

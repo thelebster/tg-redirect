@@ -125,7 +125,9 @@ async def parse_channel_info(url):
             profile_name = page_title.contents[0].strip() if page_title is not None else ''
             page_description = soup.find(name='div', attrs={'class': 'tgme_page_description'})
             profile_status = page_description.decode_contents(formatter="html") if page_description is not None else ''
-            return profile_name, profile_status, profile_image
+            page_extra = soup.find(name='div', attrs={'class': 'tgme_page_extra'})
+            profile_extra = page_extra.decode_contents(formatter="html") if page_extra is not None else ''
+            return profile_name, profile_status, profile_image, profile_extra
 
 
 async def parse_embed(url):
@@ -184,7 +186,7 @@ async def redirect(request):
         if USE_PARSER == 'True':
             try:
                 profile_info = await parse_channel_info(tme_url)
-                profile_name, profile_status, profile_image = profile_info
+                profile_name, profile_status, profile_image, profile_extra = profile_info
                 await download_profile_image(profile_image, name)
                 response = {
                     'profile_photo': f'{name}.jpg',
@@ -204,6 +206,9 @@ async def redirect(request):
                         response['message_text'] = message_text
                     except Exception as err:
                         logger.error(err)
+
+                if profile_extra.strip():
+                    response['profile_extra'] = profile_extra
 
                 return response
             except Exception as err:
