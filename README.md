@@ -28,6 +28,7 @@ server {
   error_log /var/log/nginx/error.log;
   access_log /var/log/nginx/access.log;
 
+  error_page 400 /400.html;
   error_page 404 /404.html;
   error_page 451 /451.html;
 

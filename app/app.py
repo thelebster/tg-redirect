@@ -80,7 +80,7 @@ async def index(request):
             if re.match(r'^[a-zA-Z0-9_]+$', redirect_path) is None:
                 raise Exception('Имя пользователя может содержать буквы латинского алфавита (a–z), цифры (0–9) и символ подчеркивания (_).')
 
-            fixed_paths = ['joinchat', 'addstickers', 'proxy']
+            fixed_paths = ['joinchat', 'addstickers']
             if len(path) == 2:
                 redirect_path = f'{path[0]}/{path[1]}'
                 if path[0] not in fixed_paths and not path[1].isnumeric():
@@ -95,14 +95,10 @@ async def index(request):
                 server = server[0]
                 port = port[0]
                 secret = secret[0]
-                regex_port_number = r'^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
-                if not port.isnumeric() or re.match(regex_port_number, port) is None:
-                    raise Exception('Порт должен быть числом в диапазоне 1-65535.')
-                if re.match(r'[0-9A-Fa-f]{32}', secret) is None:
-                    raise Exception('Плохой секрет.')
-                regex_server_name = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$'
-                if re.match(regex_server_name, server) is None:
-                    raise Exception('Неверно указано имя сервера.')
+                try:
+                    validate_proxy_url(server, port, secret)
+                except Exception as err:
+                    raise err
                 redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}?{query_string}'
                 return {
                     'source_url': source_url,
@@ -177,6 +173,17 @@ def blacklisted(path):
     return False
 
 
+def validate_proxy_url(server=None, port=None, secret=None):
+    regex_port_number = r'^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
+    if not port.isnumeric() or re.match(regex_port_number, port) is None:
+        raise Exception('Порт должен быть числом в диапазоне 1-65535.')
+    if re.match(r'[0-9A-Fa-f]{32}', secret) is None:
+        raise Exception('Плохой секрет.')
+    regex_server_name = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$'
+    if re.match(regex_server_name, server) is None:
+        raise Exception('Неверно указано имя сервера.')
+
+
 @aiohttp_jinja2.template('redirect.html')
 async def redirect(request):
     route_name = request.match_info.route.name
@@ -207,13 +214,10 @@ async def redirect(request):
         secret = request.query.get('secret', None)
         if None in [server, port, secret]:
             return web.Response(status=400)
-        regex_port_number = r'^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
-        if not port.isnumeric() or re.match(regex_port_number, port) is None:
-            return web.Response(status=400)
-        if re.match(r'[0-9A-Fa-f]{32}', secret) is None:
-            return web.Response(status=400)
-        regex_server_name = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$'
-        if re.match(regex_server_name, server) is None:
+        try:
+            validate_proxy_url(server, port, secret)
+        except Exception as err:
+            logger.error(err)
             return web.Response(status=400)
         location = f'tg://proxy?server={server}&port={port}&secret={secret}'
         tme_url = f'https://t.me/proxy?server={server}&port={port}&secret={secret}'
