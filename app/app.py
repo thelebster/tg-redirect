@@ -87,16 +87,11 @@ async def index(request):
                     raise Exception('Номер сообщения должен быть числом.')
 
             if redirect_path == 'proxy' and len(query_string_dict) == 3:
-                server = query_string_dict.get('server', None)
-                port = query_string_dict.get('port', None)
-                secret = query_string_dict.get('secret', None)
-                if None in [server, port, secret]:
-                    raise Exception('Указан неверный адрес.')
-                server = server[0]
-                port = port[0]
-                secret = secret[0]
+                server = query_string_dict.get('server', None)[0]
+                port = query_string_dict.get('port', None)[0]
+                secret = query_string_dict.get('secret', None)[0]
                 try:
-                    validate_proxy_url(server, port, secret)
+                    validate_proxy(server, port, secret)
                 except Exception as err:
                     raise err
                 redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}?{query_string}'
@@ -173,7 +168,9 @@ def blacklisted(path):
     return False
 
 
-def validate_proxy_url(server=None, port=None, secret=None):
+def validate_proxy(server=None, port=None, secret=None):
+    if None in [server, port, secret]:
+        raise Exception('Указан неверный адрес.')
     regex_port_number = r'^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     if not port.isnumeric() or re.match(regex_port_number, port) is None:
         raise Exception('Порт должен быть числом в диапазоне 1-65535.')
@@ -212,10 +209,8 @@ async def redirect(request):
         server = request.query.get('server', None)
         port = request.query.get('port', None)
         secret = request.query.get('secret', None)
-        if None in [server, port, secret]:
-            return web.Response(status=400)
         try:
-            validate_proxy_url(server, port, secret)
+            validate_proxy(server, port, secret)
         except Exception as err:
             logger.error(err)
             return web.Response(status=400)

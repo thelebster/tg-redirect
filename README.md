@@ -70,6 +70,10 @@ server {
     return 404;
   }
 
+  location = /400.html {
+    root /srv/tg-redirect/app/static;
+  }
+
   location = /404.html {
     root /srv/tg-redirect/app/static;
   }
