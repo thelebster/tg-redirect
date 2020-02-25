@@ -95,7 +95,12 @@
                                   window.location.replace("{{ location }}");
                                 }, 500);
                             </script>
-                            <p><a href='{{ location }}' class='waves-effect waves-light btn'>Открыть в Телеграм</a></p>
+                            {%
+                                set btn_text = 'Применить настройки прокси' if route_name and route_name == 'proxy'
+                                    else 'Добавить стикеры' if route_name and route_name == 'addstickers'
+                                    else 'Открыть в Телеграм'
+                            %}
+                            <p><a href='{{ location }}' class='waves-effect waves-light btn'>{{ btn_text|default('Открыть в Телеграм') }}</a></p>
                         {% else %}
                             <p>Указан неверный адрес.</p>
                         {% endif %}

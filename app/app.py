@@ -7,7 +7,7 @@ import aiohttp_jinja2
 import jinja2
 import os
 import json
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 from telethon import TelegramClient, connection
 from telethon.tl.functions.users import GetFullUserRequest
 from telethon.tl.functions.channels import GetFullChannelRequest
@@ -63,6 +63,8 @@ async def index(request):
                 return {}
 
             url = urlparse(source_url)
+            query_string = url.query
+            query_string_dict = parse_qs(url.query)
             default_scheme = 'https://'
             default_hostname = 't.me/'
             path = url.path.replace(default_hostname, '').strip("/")
@@ -78,11 +80,34 @@ async def index(request):
             if re.match(r'^[a-zA-Z0-9_]+$', redirect_path) is None:
                 raise Exception('Имя пользователя может содержать буквы латинского алфавита (a–z), цифры (0–9) и символ подчеркивания (_).')
 
-            fixed_paths = ['joinchat', 'addstickers']
+            fixed_paths = ['joinchat', 'addstickers', 'proxy']
             if len(path) == 2:
                 redirect_path = f'{path[0]}/{path[1]}'
                 if path[0] not in fixed_paths and not path[1].isnumeric():
                     raise Exception('Номер сообщения должен быть числом.')
+
+            if redirect_path == 'proxy' and len(query_string_dict) == 3:
+                server = query_string_dict.get('server', None)
+                port = query_string_dict.get('port', None)
+                secret = query_string_dict.get('secret', None)
+                if None in [server, port, secret]:
+                    raise Exception('Указан неверный адрес.')
+                server = server[0]
+                port = port[0]
+                secret = secret[0]
+                regex_port_number = r'^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
+                if not port.isnumeric() or re.match(regex_port_number, port) is None:
+                    raise Exception('Порт должен быть числом в диапазоне 1-65535.')
+                if re.match(r'[0-9A-Fa-f]{32}', secret) is None:
+                    raise Exception('Плохой секрет.')
+                regex_server_name = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$'
+                if re.match(regex_server_name, server) is None:
+                    raise Exception('Неверно указано имя сервера.')
+                redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}?{query_string}'
+                return {
+                    'source_url': source_url,
+                    'redirect_url': redirect_url,
+                }
 
             if blacklisted(redirect_path):
                 raise Exception('Канал заблокирован.')
@@ -176,6 +201,23 @@ async def redirect(request):
         location = f'tg://addstickers?set={name}'
         tme_url = f'https://t.me/addstickers/{name}'
 
+    if route_name == 'proxy':
+        server = request.query.get('server', None)
+        port = request.query.get('port', None)
+        secret = request.query.get('secret', None)
+        if None in [server, port, secret]:
+            return web.Response(status=400)
+        regex_port_number = r'^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
+        if not port.isnumeric() or re.match(regex_port_number, port) is None:
+            return web.Response(status=400)
+        if re.match(r'[0-9A-Fa-f]{32}', secret) is None:
+            return web.Response(status=400)
+        regex_server_name = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$'
+        if re.match(regex_server_name, server) is None:
+            return web.Response(status=400)
+        location = f'tg://proxy?server={server}&port={port}&secret={secret}'
+        tme_url = f'https://t.me/proxy?server={server}&port={port}&secret={secret}'
+
     if route_name == 'post':
         name = request.match_info.get('name')
         post = request.match_info.get('post')
@@ -190,11 +232,6 @@ async def redirect(request):
     if location is None:
         return {}
     else:
-        try:
-            name
-        except NameError:
-            name = code
-
         if USE_PARSER == 'True':
             try:
                 profile_info = await parse_channel_info(tme_url)
@@ -204,8 +241,13 @@ async def redirect(request):
                     'location': location,
                     'base_path': f'https://{DOMAIN_NAME}',
                     'profile_status': profile_status,
+                    'route_name': route_name,
                 }
                 if profile_image is not None:
+                    try:
+                        name
+                    except NameError:
+                        name = code
                     await download_profile_image(profile_image, name)
                     response['profile_photo'] = f'{name}.jpg'
                 try:
@@ -229,6 +271,7 @@ async def redirect(request):
                 return {
                     'location': location,
                     'base_path': f'https://{DOMAIN_NAME}',
+                    'route_name': route_name,
                 }
 
         try:
@@ -363,6 +406,7 @@ app = web.Application()
 routes = [
     web.get('/', index, name='index'),
     web.post('/', index, name='index'),
+    web.get('/proxy', redirect, name='proxy'),
     web.get(r'/{name:[a-zA-Z0-9_]+}', redirect, name='account'),
     web.get('/joinchat/{code}', redirect, name='joinchat'),
     web.get('/addstickers/{name}', redirect, name='addstickers'),

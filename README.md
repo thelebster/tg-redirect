@@ -87,6 +87,9 @@ Remove MTPROXY_* variables from .env to disable MTProxy.
 
 ## Changelog
 
+**Feb 25, 2020**
+* Add support for stickers `/addstickers` and mtproto proxy `/proxy?server=...` links.
+
 **Feb 22, 2020**
 * Parsing the t.me/username page directly to get details about the channel invitation.
 * Checking if channel on a blacklist using comma separated values from the `BLACKLIST` environment variable.
