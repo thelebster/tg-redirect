@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Переадресация Телеграм</title>
     <meta name="description" content="Сервис для переадресации Телеграм позволяет обойти блокировку и дать рабочую ссылку на Телеграм аккаунт, канал или чат.">
-    <meta name="author" content="Anton Lebedev">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel=stylesheet type=text/css href="/static/css/style.css">
     <link rel="icon" type="img/png" href="/static/img/favicon.png">
@@ -39,7 +38,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <b><a href="{{ redirect_url }}">{{ redirect_url }}</a></b>
+                        <a href="{{ redirect_url }}">{{ redirect_url }}</a>
                         {{ error }}
                     </div>
                 </div>
@@ -50,7 +49,7 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <p class="grey-text">Чтобы связаться со&nbsp;мной, <a href="mailto:info@tgram.app">напиши на&nbsp;электронную почту</a>.</p>
+                    <p class="grey-text">Чтобы связаться, <a href="mailto:info@tgram.app">напиши на&nbsp;электронную почту</a>.</p>
                 </div>
             </div>
         </div>

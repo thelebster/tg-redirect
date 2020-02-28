@@ -96,3 +96,13 @@ p.extra {
 footer {
   height: 120px;
 }
+
+a {
+  text-decoration: none;
+  border-bottom: 1px solid;
+  border-color: #b2ccf0;
+  &:hover {
+    color: #b22222;
+    border-color: #f0b2b2;
+  }
+}
