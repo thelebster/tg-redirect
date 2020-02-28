@@ -241,14 +241,15 @@ async def redirect(request):
                     'base_path': f'https://{DOMAIN_NAME}',
                     'profile_status': profile_status,
                     'route_name': route_name,
+                    'profile_photo': profile_image,
                 }
-                if profile_image is not None:
-                    try:
-                        name
-                    except NameError:
-                        name = code
-                    await download_profile_image(profile_image, name)
-                    response['profile_photo'] = f'{name}.jpg'
+                # if profile_image is not None:
+                #     try:
+                #         name
+                #     except NameError:
+                #         name = code
+                #     await download_profile_image(profile_image, name)
+                #     response['profile_photo'] = f'{name}.jpg'
                 try:
                     tme_post_url
                 except NameError as err:
