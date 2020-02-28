@@ -39,6 +39,10 @@ input#url {
   font-size: 16px;
 }
 
+.container {
+    max-width: 800px;
+}
+
 .container.info {
   max-width: 540px;
 }
@@ -87,4 +91,8 @@ img.avatar {
 
 p.extra {
   margin-bottom: 6px;
+}
+
+footer {
+  height: 120px;
 }
