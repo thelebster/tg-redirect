@@ -102,9 +102,16 @@ a {
   text-decoration: none;
   border-bottom: 1px solid;
   border-color: #b2ccf0;
-  &:hover {
+
+  &:hover,
+  &:visited:hover {
     color: #b22222;
     border-color: #f0b2b2;
+  }
+
+  &:visited {
+    color: #b40eb4;
+    border-color: #e0b2e0;
   }
 }
 
