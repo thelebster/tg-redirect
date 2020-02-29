@@ -77,8 +77,8 @@ async def index(request):
             path.pop(0)
 
             redirect_path = f'{path[0]}'
-            if re.match(r'^[a-zA-Z0-9_]+$', redirect_path) is None:
-                raise Exception('Имя пользователя может содержать буквы латинского алфавита (a–z), цифры (0–9) и символ подчеркивания (_).')
+            if re.match(r'^[a-zA-Z0-9_]{5,}$', redirect_path) is None:
+                raise Exception('Имя пользователя может содержать буквы латинского алфавита (a–z), цифры (0–9) и символ подчеркивания (_). Минимальная длина 5 символов.')
 
             fixed_paths = ['joinchat', 'addstickers']
             if len(path) == 2:
@@ -407,10 +407,10 @@ routes = [
     web.get('/', index, name='index'),
     web.post('/', index, name='index'),
     web.get('/proxy', redirect, name='proxy'),
-    web.get(r'/{name:[a-zA-Z0-9_]+}', redirect, name='account'),
+    web.get(r'/{name:[a-zA-Z0-9_]{5,}}', redirect, name='account'),
     web.get('/joinchat/{code}', redirect, name='joinchat'),
     web.get('/addstickers/{name}', redirect, name='addstickers'),
-    web.get(r'/{name:[a-zA-Z0-9_]+}/{post:\d+}', redirect, name='post'),
+    web.get(r'/{name:[a-zA-Z0-9_]{5,}}/{post:\d+}', redirect, name='post'),
 ]
 
 if DEVELOPMENT == 'True':
