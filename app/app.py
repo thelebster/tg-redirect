@@ -402,10 +402,16 @@ async def redirect(request):
         }
 
 
+@aiohttp_jinja2.template('help.html')
+async def help_page(request):
+    return {}
+
+
 app = web.Application()
 routes = [
     web.get('/', index, name='index'),
     web.post('/', index, name='index'),
+    web.get('/help', help_page, name='help'),
     web.get('/proxy', redirect, name='proxy'),
     web.get(r'/{name:[a-zA-Z0-9_]{5,}}', redirect, name='account'),
     web.get('/joinchat/{code}', redirect, name='joinchat'),
