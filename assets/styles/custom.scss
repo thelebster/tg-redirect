@@ -120,3 +120,16 @@ a {
 a.btn {
   color: #fff;
 }
+
+ul.dashed-list {
+
+  li {
+    padding-bottom: 8px;
+
+    &:before {
+      content: '— ';
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
