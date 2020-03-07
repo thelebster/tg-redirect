@@ -1,6 +1,6 @@
 # Telegram forwarding service
 
-On April 2018, Telegram was banned in Russia. This service allows you to share a working link to the Telegram account, channel or chat with an informative preview page.
+On April 2018, [Telegram](https://telegram.org) was banned in Russia. This service allows you to share a working link to the Telegram account, channel or chat with an informative preview page.
 
 ![alt text][screenshot]
 
@@ -10,6 +10,15 @@ Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram c
 
 ```
 docker-compose -f docker-compose.yml up --build -d
+```
+
+## Local development environment
+
+```
+DOMAIN_NAME=localhost:8080 \
+IMAGES_DIR=./img \
+DEVELOPMENT=True \
+python3 ./app/app.py
 ```
 
 ## Nginx configuration

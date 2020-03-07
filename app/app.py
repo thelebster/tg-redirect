@@ -1,15 +1,12 @@
 import asyncio
-import logging
 import pathlib
 import aiohttp
 from aiohttp import web
 import aiohttp_jinja2
 import jinja2
 import os
-import json
 from urllib.parse import urlparse, parse_qs
 import logging
-import uuid
 import re
 from bs4 import BeautifulSoup
 
@@ -211,18 +208,19 @@ async def redirect(request):
     if location is None:
         return web.Response(status=404)
     else:
+        response = {
+            'location': location,
+            'base_path': f'https://{DOMAIN_NAME}',
+            'route_name': route_name,
+        }
+
         if USE_PARSER == 'True':
             try:
                 profile_info = await parse_channel_info(tme_url)
                 profile_name, profile_status, profile_image, profile_extra = profile_info
-                response = {
-                    'profile_name': profile_name,
-                    'location': location,
-                    'base_path': f'https://{DOMAIN_NAME}',
-                    'profile_status': profile_status,
-                    'route_name': route_name,
-                    'profile_image': profile_image,
-                }
+                response['profile_name'] = profile_name
+                response['profile_status'] = profile_status
+                response['profile_image'] = profile_image
                 if profile_image is not None:
                     try:
                         name
@@ -230,6 +228,7 @@ async def redirect(request):
                         name = code
                     await download_profile_image(profile_image, name)
                     response['local_profile_image'] = f'{name}.jpg'
+
                 try:
                     tme_post_url
                 except NameError as err:
@@ -248,17 +247,9 @@ async def redirect(request):
                 return response
             except Exception as err:
                 logger.error(err)
-                return {
-                    'location': location,
-                    'base_path': f'https://{DOMAIN_NAME}',
-                    'route_name': route_name,
-                }
+                return response
 
-        return {
-            'location': location,
-            'base_path': f'https://{DOMAIN_NAME}',
-            'route_name': route_name,
-        }
+        return response
 
 
 app = web.Application()
