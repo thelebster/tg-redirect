@@ -8,7 +8,7 @@ Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram c
 
 ## Build and deploy
 
-To run with a blacklist file option, copy `sample.blacklist.txt` to `blacklist.txt`.
+Copy `sample.blacklist.txt` to `blacklist.txt` and add blocked channels, one per line.
 
 ```
 docker-compose -f docker-compose.yml up --build -d
@@ -105,10 +105,19 @@ server {
 }
 ```
 
+## Troubleshooting
+
+If you just added `blacklist.txt` file and after restart checking is not work properly, try to restart service with a command below.
+
+```
+docker-compose -f docker-compose.yml up --build -d --force
+```
+
 ## Changelog
 
 **March 7, 2020**
 * Remove Telethon from dependencies. Telegram API is not used anymore.
+* Use `blacklist.txt` to provide a list of blocked channels.
 
 **Feb 25, 2020**
 * Add support for stickers `/addstickers` and mtproto proxy `/proxy?server=...` links.
