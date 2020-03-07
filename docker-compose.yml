@@ -7,14 +7,15 @@ services:
       - DOMAIN_NAME=${DOMAIN_NAME}
       - USE_PARSER=${USE_PARSER}
       - IMAGES_DIR=${IMAGES_DIR}
-      - DEVELOPMENT=${DEVELOPMENT}
       - BLACKLIST=${BLACKLIST}
       - SITE_EMAIL=${SITE_EMAIL}
+      - DEVELOPMENT=${DEVELOPMENT}
     image: tg-redirect
     hostname: tg-redirect
     container_name: tg-redirect
     restart: always
     volumes:
       - ./files/img:${IMAGES_DIR}
+      - ./blacklist.txt:/blacklist.txt:ro
     ports:
       - 127.0.0.1:8000:8080

@@ -8,6 +8,8 @@ Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram c
 
 ## Build and deploy
 
+To run with a blacklist file option, copy `sample.blacklist.txt` to `blacklist.txt`.
+
 ```
 docker-compose -f docker-compose.yml up --build -d
 ```

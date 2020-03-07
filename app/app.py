@@ -20,6 +20,14 @@ USE_PARSER = os.getenv('USE_PARSER', 'True')
 IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
 BLACKLIST = os.getenv('BLACKLIST', '')
 
+BLACKLIST_TXT = pathlib.Path(__file__).parent / '../blacklist.txt'
+if os.path.exists(BLACKLIST_TXT) and os.path.isfile(BLACKLIST_TXT):
+    with open(BLACKLIST_TXT) as blacklist_txt:
+        lines = blacklist_txt.readlines()
+        if len(lines) > 0:
+            lines.append(BLACKLIST)
+            BLACKLIST = ','.join(lines)
+
 
 def setup_jinja(app):
     loader = jinja2.FileSystemLoader(str(TEMPLATES_ROOT))
@@ -265,7 +273,7 @@ routes = [
 
 if DEVELOPMENT == 'True':
     routes.append(web.static('/static/', pathlib.Path(__file__).parent / 'static', name='static'))
-    routes.append(web.static('/files/img/', pathlib.Path(__file__).parent / '../img', name='img'))
+    routes.append(web.static('/files/img/', IMAGES_DIR, name='img'))
 
 app.add_routes(routes)
 setup_jinja(app)

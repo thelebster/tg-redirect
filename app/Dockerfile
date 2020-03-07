@@ -6,5 +6,5 @@ COPY Pipfile* /tmp/
 RUN cd /tmp && pipenv lock --requirements > requirements.txt
 RUN pip install -r /tmp/requirements.txt
 COPY . /app
-RUN mkdir -p /tmp/files/img && mkdir -p /tmp/sessions && mkdir -p /tmp/cache
+RUN mkdir -p /tmp/files/img && touch /tmp/blacklist.txt
 CMD python app.py
