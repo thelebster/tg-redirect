@@ -5,17 +5,8 @@ services:
     build: ./app
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
-      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
-      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - MTPROXY_HOST=${MTPROXY_HOST}
-      - MTPROXY_PORT=${MTPROXY_PORT}
-      - MTPROXY_SECRET=${MTPROXY_SECRET}
-      - SHOW_INFO=${SHOW_INFO}
       - USE_PARSER=${USE_PARSER}
       - IMAGES_DIR=${IMAGES_DIR}
-      - SESSIONS_DIR=${SESSIONS_DIR}
-      - CACHE_DIR=${CACHE_DIR}
       - DEVELOPMENT=${DEVELOPMENT}
       - BLACKLIST=${BLACKLIST}
       - SITE_EMAIL=${SITE_EMAIL}
@@ -25,7 +16,5 @@ services:
     restart: always
     volumes:
       - ./files/img:${IMAGES_DIR}
-      - ./sessions:${SESSIONS_DIR}
-      - ./cache:${CACHE_DIR}
     ports:
       - 127.0.0.1:8000:8080

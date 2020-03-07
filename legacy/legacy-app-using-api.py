@@ -8,6 +8,9 @@ import jinja2
 import os
 import json
 from urllib.parse import urlparse, parse_qs
+from telethon import TelegramClient, connection
+from telethon.tl.functions.users import GetFullUserRequest
+from telethon.tl.functions.channels import GetFullChannelRequest
 import logging
 import uuid
 import re
@@ -17,10 +20,27 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s
 logger = logging.getLogger(__file__)
 
 TEMPLATES_ROOT = pathlib.Path(__file__).parent / 'templates'
+
 DOMAIN_NAME = os.getenv('DOMAIN_NAME')
+
+# Get your own api_id and api_hash from https://my.telegram.org, under API Development.
+TELEGRAM_API_ID = os.getenv('TELEGRAM_API_ID')
+TELEGRAM_API_HASH = os.getenv('TELEGRAM_API_HASH')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+
+MTPROXY_HOST = os.getenv('MTPROXY_HOST')
+MTPROXY_PORT = os.getenv('MTPROXY_PORT')
+MTPROXY_SECRET = os.getenv('MTPROXY_SECRET')
+MTPROXY_ENABLED = False if MTPROXY_HOST is None or MTPROXY_PORT is None or MTPROXY_SECRET is None else True
+
+SHOW_INFO = os.getenv('SHOW_INFO', 'False')
 DEVELOPMENT = os.getenv('DEVELOPMENT', 'False')
 USE_PARSER = os.getenv('USE_PARSER', 'True')
+
 IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
+SESSIONS_DIR = os.getenv('SESSIONS_DIR', '/tmp/sessions')
+CACHE_DIR = os.getenv('CACHE_DIR', '/tmp/cache')
+
 BLACKLIST = os.getenv('BLACKLIST', '')
 
 
@@ -209,7 +229,7 @@ async def redirect(request):
         tme_post_url = f'https://t.me/{name}/{post}?embed=1'
 
     if location is None:
-        return web.Response(status=404)
+        return {}
     else:
         if USE_PARSER == 'True':
             try:
@@ -254,10 +274,131 @@ async def redirect(request):
                     'route_name': route_name,
                 }
 
+        try:
+            post
+        except NameError:
+            post = None
+
+        if name is not None and SHOW_INFO == 'True':
+            try:
+                session_id = str(uuid.uuid1())
+                if MTPROXY_ENABLED:
+                    client = TelegramClient(
+                        f'{SESSIONS_DIR}/{session_id}',
+                        TELEGRAM_API_ID,
+                        TELEGRAM_API_HASH,
+                        # Use one of the available connection modes.
+                        # Normally, this one works with most proxies.
+                        connection=connection.ConnectionTcpMTProxyRandomizedIntermediate,
+                        # Then, pass the proxy details as a tuple:
+                        #     (host name, port, proxy secret)
+                        #
+                        # If the proxy has no secret, the secret must be:
+                        #     '00000000000000000000000000000000'
+                        proxy=(MTPROXY_HOST, int(MTPROXY_PORT), MTPROXY_SECRET)
+                    )
+                else:
+                    client = TelegramClient(f'{SESSIONS_DIR}/{session_id}', TELEGRAM_API_ID, TELEGRAM_API_HASH)
+
+                await client.start(bot_token=TELEGRAM_BOT_TOKEN)
+                # Enabling HTML as the default format
+                client.parse_mode = 'html'
+
+                # Try cache.
+                cache_filename = f'{CACHE_DIR}/{name}.json'
+                if post is not None:
+                    cache_filename = f'{CACHE_DIR}/{name}-{post}.json'
+
+                entity = {}
+                if os.path.exists(cache_filename):
+                    with open(cache_filename) as cache:
+                        entity = json.load(cache)
+                else:
+                    if post is not None:
+                        message_entity = await client.get_messages(name, ids=int(post))
+                        logger.debug(message_entity)
+                        entity['message_id'] = message_entity.id
+                        if hasattr(message_entity, 'message'):
+                            entity['message_text'] = message_entity.message
+                        if hasattr(message_entity, 'raw_text'):
+                            entity['message_raw_text'] = message_entity.raw_text
+                        if hasattr(message_entity, 'text'):
+                            entity['message_html'] = message_entity.text
+                        if hasattr(message_entity, 'date'):
+                            entity['message_date'] = str(message_entity.date)
+                        if hasattr(message_entity, 'chat'):
+                            entity['id'] = str(message_entity.chat.id)
+                            entity['username'] = str(message_entity.chat.username)
+                            if hasattr(message_entity.chat, 'broadcast'):
+                                entity['broadcast'] = message_entity.chat.broadcast
+                                entity['title'] = message_entity.chat.title
+                    else:
+                        profile_entity = await client.get_entity(name)
+                        logger.debug(profile_entity)
+                        if hasattr(profile_entity, 'broadcast'):
+                            extended_profile_entity = await client(GetFullChannelRequest(name))
+                            logger.debug(extended_profile_entity)
+                        else:
+                            extended_profile_entity = await client(GetFullUserRequest(name))
+                            logger.debug(extended_profile_entity)
+
+                        entity['id'] = profile_entity.id
+                        if hasattr(profile_entity, 'bot'):
+                            entity['bot'] = profile_entity.bot
+                        entity['username'] = profile_entity.username
+                        if hasattr(profile_entity, 'broadcast'):
+                            entity['broadcast'] = profile_entity.broadcast
+                            entity['title'] = profile_entity.title
+                        if hasattr(profile_entity, 'first_name'):
+                            entity['first_name'] = profile_entity.first_name
+                        if hasattr(profile_entity, 'last_name'):
+                            entity['last_name'] = profile_entity.last_name
+                        if hasattr(extended_profile_entity, 'about'):
+                            entity['about'] = extended_profile_entity.about
+                        if hasattr(extended_profile_entity, 'full_chat'):
+                            if hasattr(extended_profile_entity.full_chat, 'about'):
+                                entity['about'] = extended_profile_entity.full_chat.about
+
+                    with open(cache_filename, 'w') as cache:
+                        json.dump(entity, cache, indent=4)
+
+                if 'broadcast' in entity:
+                    # This is channel or chat.
+                    profile_name = entity.get('title', name)
+                else:
+                    # This is user or bot.
+                    profile_name = ' '.join(list(filter(None, (entity.get('first_name', ''), entity.get('last_name', '')))))
+                    if not profile_name.strip():
+                        profile_name = entity.get('username', name)
+
+                profile_status = re.sub(
+                    '(^@|\s@)([a-zA-Z0-9_]+)(\s|$)',
+                    ' <a href="tg://resolve?domain=\\2">@\\2</a>\\3',
+                    entity.get('about', '')).strip()
+                message_text = re.sub(
+                    '(^@|\s@)([a-zA-Z0-9_]+)(\s|$)',
+                    ' <a href="tg://resolve?domain=\\2">@\\2</a>\\3',
+                    entity.get('message_html', '')).strip()
+
+                # Try cache.
+                img_filename = f'{IMAGES_DIR}/{name}.jpg'
+                if not os.path.exists(img_filename):
+                    profile_photo = await client.download_profile_photo(name, img_filename, download_big=False)
+
+                return {
+                    'profile_photo': f'{name}.jpg',
+                    'profile_name': profile_name,
+                    'profile_status': profile_status,
+                    'message_text': message_text,
+                    'location': location,
+                    'base_path': f'https://{DOMAIN_NAME}',
+                }
+            except Exception as err:
+                logger.error(err)
+
         return {
             'location': location,
             'base_path': f'https://{DOMAIN_NAME}',
-            'route_name': route_name,
         }
 
 

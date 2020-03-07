@@ -3,9 +3,5 @@
 .env*
 *.pyc
 !.env.sample
-*.session
-*.session-journal
 files
 img
-sessions
-cache

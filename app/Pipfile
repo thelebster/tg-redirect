@@ -9,7 +9,6 @@ verify_ssl = true
 python-dotenv = "*"
 aiohttp = "*"
 aiohttp-jinja2 = "*"
-telethon = "*"
 beautifulsoup4 = "*"
 
 [requires]
