@@ -2,19 +2,17 @@
 
 On April 2018, Telegram was banned in Russia. This service allows you to share a working link to the Telegram account, channel or chat with an informative preview page.
 
-Сервис для переадресации Телеграм позволяет обойти блокировку и дать рабочую ссылку на Телеграм аккаунт, канал или чат.
-
 ![alt text][screenshot]
 
 Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram channel.
 
-### Build and deploy
+## Build and deploy
 
 ```
 docker-compose -f docker-compose.yml up --build -d
 ```
 
-### Nginx configuration
+## Nginx configuration
 
 ```
 upstream tg-redirect {
@@ -70,6 +68,10 @@ server {
     return 404;
   }
 
+  location = /help {
+    rewrite /help /static/help.html;
+  }
+
   location = /400.html {
     root /srv/tg-redirect/app/static;
   }
@@ -84,13 +86,10 @@ server {
 }
 ```
 
-#### Disabling MTProxy
-
-Remove MTPROXY_* variables from .env to disable MTProxy.
-
-[screenshot]: common/images/ohmypy-post-screenshot.png "Page preview for Oh My Py Telegram channel (https://t.me/ohmypy)"
-
 ## Changelog
+
+**March 7, 2020**
+* Remove Telethon from dependencies.
 
 **Feb 25, 2020**
 * Add support for stickers `/addstickers` and mtproto proxy `/proxy?server=...` links.
@@ -106,3 +105,5 @@ Remove MTPROXY_* variables from .env to disable MTProxy.
 
 **Feb 12, 2020** 
 * Basic implementation. Show simple preview page with auto-redirect after 500 ms and a button. 
+
+[screenshot]: common/images/ohmypy-post-screenshot.png "Page preview for Oh My Py Telegram channel (https://t.me/ohmypy)"
