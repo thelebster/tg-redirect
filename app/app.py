@@ -37,7 +37,7 @@ if os.path.exists(WHITELIST_FILE) and os.path.isfile(WHITELIST_FILE):
         if len(lines) > 0:
             lines.append(WHITELIST)
             WHITELIST = ','.join(lines)
-            logger.debug(f'Whitelisted channels: {BLACKLIST}')
+            logger.debug(f'Whitelisted channels: {WHITELIST}')
 
 
 def setup_jinja(app):
@@ -52,6 +52,7 @@ async def index(request):
         return {}
 
     if request.method == 'POST' and request.can_read_body:
+        redirect_hostname = DOMAIN_NAME if not DOMAIN_NAME.strip() else request.host
         try:
             data = await request.post()
             source_url = data.get('url')
@@ -90,7 +91,8 @@ async def index(request):
                     validate_proxy(server, port, secret)
                 except Exception as err:
                     raise err
-                redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}?{query_string}'
+
+                redirect_url = f'{request.scheme}://{redirect_hostname}/{redirect_path}?{query_string}'
                 return {
                     'source_url': source_url,
                     'redirect_url': redirect_url,
@@ -103,7 +105,7 @@ async def index(request):
             if not whitelisted(redirect_path):
                 err = 'Перед тем как использовать ссылку, напишите администратору.'
 
-            redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}'
+            redirect_url = f'{request.scheme}://{redirect_hostname}/{redirect_path}'
             return {
                 'source_url': source_url,
                 'redirect_url': redirect_url,
@@ -204,6 +206,7 @@ def validate_proxy(server=None, port=None, secret=None):
 @aiohttp_jinja2.template('redirect.html')
 async def redirect(request):
     route_name = request.match_info.route.name
+    redirect_hostname = DOMAIN_NAME if not DOMAIN_NAME.strip() else request.host
     if route_name == 'account':
         name = request.match_info.get('name')
         if blacklisted(name):
@@ -261,7 +264,7 @@ async def redirect(request):
     else:
         response = {
             'location': location,
-            'base_path': f'https://{DOMAIN_NAME}',
+            'base_path': f'{request.scheme}://{redirect_hostname}',
             'route_name': route_name,
         }
 
