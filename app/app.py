@@ -53,6 +53,7 @@ async def index(request):
 
     if request.method == 'POST' and request.can_read_body:
         redirect_hostname = DOMAIN_NAME if not DOMAIN_NAME.strip() else request.host
+        redirect_scheme = 'https' if request.secure else 'http'
         try:
             data = await request.post()
             source_url = data.get('url')
@@ -92,7 +93,7 @@ async def index(request):
                 except Exception as err:
                     raise err
 
-                redirect_url = f'{request.scheme}://{redirect_hostname}/{redirect_path}?{query_string}'
+                redirect_url = f'{redirect_scheme}://{redirect_hostname}/{redirect_path}?{query_string}'
                 return {
                     'source_url': source_url,
                     'redirect_url': redirect_url,
@@ -105,7 +106,7 @@ async def index(request):
             if not whitelisted(redirect_path):
                 err = 'Перед тем как использовать ссылку, напишите администратору.'
 
-            redirect_url = f'{request.scheme}://{redirect_hostname}/{redirect_path}'
+            redirect_url = f'{redirect_scheme}://{redirect_hostname}/{redirect_path}'
             return {
                 'source_url': source_url,
                 'redirect_url': redirect_url,
@@ -207,6 +208,7 @@ def validate_proxy(server=None, port=None, secret=None):
 async def redirect(request):
     route_name = request.match_info.route.name
     redirect_hostname = DOMAIN_NAME if not DOMAIN_NAME.strip() else request.host
+    redirect_scheme = 'https' if request.secure else 'http'
     if route_name == 'account':
         name = request.match_info.get('name')
         if blacklisted(name):
@@ -264,7 +266,7 @@ async def redirect(request):
     else:
         response = {
             'location': location,
-            'base_path': f'{request.scheme}://{redirect_hostname}',
+            'base_path': f'{redirect_scheme}://{redirect_hostname}',
             'route_name': route_name,
         }
 
