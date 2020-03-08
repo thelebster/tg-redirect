@@ -8,9 +8,12 @@ Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram c
 
 ## Build and deploy
 
-Copy `sample.blacklist.txt` to `blacklist.txt` and add blocked channels, one per line.
+Copy `sample.blacklist.txt` to `config/blacklist.txt` and add blocked channels, one per line.
 
 ```
+mkdir -p config \
+&& cp sample.blacklist.txt config/blacklist.txt
+
 docker-compose -f docker-compose.yml up --build -d
 ```
 

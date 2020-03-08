@@ -20,10 +20,10 @@ USE_PARSER = os.getenv('USE_PARSER', 'True')
 IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
 BLACKLIST = os.getenv('BLACKLIST', '')
 
-BLACKLIST_TXT = pathlib.Path(__file__).parent / '../blacklist.txt'
-if os.path.exists(BLACKLIST_TXT) and os.path.isfile(BLACKLIST_TXT):
-    with open(BLACKLIST_TXT) as blacklist_txt:
-        lines = blacklist_txt.readlines()
+BLACKLIST_FILE = '/config/blacklist.txt'
+if os.path.exists(BLACKLIST_FILE) and os.path.isfile(BLACKLIST_FILE):
+    with open(BLACKLIST_FILE) as blacklist_file:
+        lines = blacklist_file.readlines()
         if len(lines) > 0:
             lines.append(BLACKLIST)
             BLACKLIST = ','.join(lines)

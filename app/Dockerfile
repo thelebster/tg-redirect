@@ -6,5 +6,8 @@ COPY Pipfile* /tmp/
 RUN cd /tmp && pipenv lock --requirements > requirements.txt
 RUN pip install -r /tmp/requirements.txt
 COPY . /app
-RUN mkdir -p /tmp/files/img && touch /tmp/blacklist.txt
+RUN mkdir -p /tmp/files/img
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD python app.py
