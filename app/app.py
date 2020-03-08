@@ -53,7 +53,7 @@ async def index(request):
 
     if request.method == 'POST' and request.can_read_body:
         redirect_hostname = DOMAIN_NAME if not DOMAIN_NAME.strip() else request.host
-        redirect_scheme = 'https' if request.secure else 'http'
+        redirect_scheme = 'https'
         try:
             data = await request.post()
             source_url = data.get('url')
@@ -208,7 +208,7 @@ def validate_proxy(server=None, port=None, secret=None):
 async def redirect(request):
     route_name = request.match_info.route.name
     redirect_hostname = DOMAIN_NAME if not DOMAIN_NAME.strip() else request.host
-    redirect_scheme = 'https' if request.secure else 'http'
+    redirect_scheme = 'https'
     if route_name == 'account':
         name = request.match_info.get('name')
         if blacklisted(name):
