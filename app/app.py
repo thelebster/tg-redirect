@@ -171,9 +171,12 @@ def blacklisted(path):
         return False
 
     blacklist = list(map(lambda str: str.strip().lower(), BLACKLIST.split(',')))
+    if path.lower() in blacklist:
+        return True
+
     # If channel is blocked, probably every post also should be blocked.
     path = path.split('/')[0]
-    if path.lower() in blacklist:
+    if path.lower() not in ['joinchat', 'addstickers'] and path.lower() in blacklist:
         return True
     return False
 
@@ -184,9 +187,12 @@ def whitelisted(path):
         return True
 
     whitelist = list(map(lambda str: str.strip().lower(), WHITELIST.split(',')))
+    if path.lower() in whitelist:
+        return True
+
     # If channel is whitelisted, probably every post also should be whitelisted, except cases when link in blacklist.
     path = path.split('/')[0]
-    if path.lower() in whitelist:
+    if path.lower() not in ['joinchat', 'addstickers'] and path.lower() in whitelist:
         return True
     return False
 
