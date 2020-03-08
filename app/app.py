@@ -27,6 +27,7 @@ if os.path.exists(BLACKLIST_FILE) and os.path.isfile(BLACKLIST_FILE):
         if len(lines) > 0:
             lines.append(BLACKLIST)
             BLACKLIST = ','.join(lines)
+            logger.debug(f'Blacklisted channels: {BLACKLIST}')
 
 WHITELIST = ''
 WHITELIST_FILE = os.getenv('WHITELIST_FILE', '/config/whitelist.txt')
@@ -36,6 +37,7 @@ if os.path.exists(WHITELIST_FILE) and os.path.isfile(WHITELIST_FILE):
         if len(lines) > 0:
             lines.append(WHITELIST)
             WHITELIST = ','.join(lines)
+            logger.debug(f'Whitelisted channels: {BLACKLIST}')
 
 
 def setup_jinja(app):
