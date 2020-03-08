@@ -110,6 +110,7 @@ async def index(request):
         except Exception as err:
             logger.error(err)
             return {
+                'source_url': source_url,
                 'error': str(err),
             }
     else:
@@ -165,6 +166,8 @@ def blacklisted(path):
         return False
 
     blacklist = list(map(lambda str: str.strip().lower(), BLACKLIST.split(',')))
+    # If channel is blocked, probably every post also should be blocked.
+    path = path.split('/')[0]
     if path.lower() in blacklist:
         return True
     return False
@@ -176,6 +179,8 @@ def whitelisted(path):
         return True
 
     whitelist = list(map(lambda str: str.strip().lower(), WHITELIST.split(',')))
+    # If channel is whitelisted, probably every post also should be whitelisted, except cases when link in blacklist.
+    path = path.split('/')[0]
     if path.lower() in whitelist:
         return True
     return False
