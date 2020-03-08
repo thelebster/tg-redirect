@@ -8,23 +8,50 @@ Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram c
 
 ## Build and deploy
 
-Copy `sample.blacklist.txt` to `config/blacklist.txt` and add blocked channels, one per line.
+### Use blacklist
+
+Copy `samplelist.txt` to `config/blacklist.txt` and add blocked channels, one per line.
 
 ```
 mkdir -p config \
-&& cp sample.blacklist.txt config/blacklist.txt
+&& cp samplelist.txt config/blacklist.txt
+```
 
+### Use whitelist
+
+Copy `samplelist.txt` to `config/whitelist.txt` and add allowed channels that should be resolved, one per line.
+
+```
+mkdir -p config \
+&& cp samplelist.txt config/whitelist.txt
+```
+
+```
 docker-compose -f docker-compose.yml up --build -d
 ```
 
 ## Local development environment
 
+Run from console:
+
 ```
 DOMAIN_NAME=localhost:8080 \
 IMAGES_DIR=./img \
 DEVELOPMENT=True \
+BLACKLIST_FILE=./config/blacklist.txt \
+WHITELIST_FILE=./config/whitelist.txt \
 python3 ./app/app.py
 ```
+
+To run from PyCharm, copy variables below and paste into the Environment variables in the active configuration.
+
+```
+DOMAIN_NAME=localhost:8080
+IMAGES_DIR=../files/img
+DEVELOPMENT=True
+BLACKLIST_FILE=../config/blacklist.txt
+WHITELIST_FILE=../config/whitelist.txt
+``` 
 
 ## Nginx configuration
 
@@ -110,13 +137,16 @@ server {
 
 ## Troubleshooting
 
-If you just added `blacklist.txt` file and after restart checking is not work properly, try to restart service with a command below.
+If you just added `blacklist.txt` or `whitelist.txt` file and after restart checking is not work properly, try to restart service with a command below.
 
 ```
 docker-compose -f docker-compose.yml up --build -d --force
 ```
 
 ## Changelog
+
+**March 8, 2020**
+* Use `whitelist.txt` to provide a list of allowed channels to make validation more strict.
 
 **March 7, 2020**
 * Remove Telethon from dependencies. Telegram API is not used anymore.

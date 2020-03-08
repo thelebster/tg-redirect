@@ -37,8 +37,10 @@
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <a href="{{ redirect_url }}">{{ redirect_url }}</a>
-                        {{ error }}
+                        <p class="status-text"><a href="{{ redirect_url }}">{{ redirect_url }}</a></p>
+                        {% if error %}
+                        <p class="status-text red lighten-5">{{ error }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>

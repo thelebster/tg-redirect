@@ -20,13 +20,22 @@ USE_PARSER = os.getenv('USE_PARSER', 'True')
 IMAGES_DIR = os.getenv('IMAGES_DIR', '/tmp/files/img')
 BLACKLIST = os.getenv('BLACKLIST', '')
 
-BLACKLIST_FILE = '/config/blacklist.txt'
+BLACKLIST_FILE = os.getenv('BLACKLIST_FILE', '/config/blacklist.txt')
 if os.path.exists(BLACKLIST_FILE) and os.path.isfile(BLACKLIST_FILE):
     with open(BLACKLIST_FILE) as blacklist_file:
         lines = blacklist_file.readlines()
         if len(lines) > 0:
             lines.append(BLACKLIST)
             BLACKLIST = ','.join(lines)
+
+WHITELIST = ''
+WHITELIST_FILE = os.getenv('WHITELIST_FILE', '/config/whitelist.txt')
+if os.path.exists(WHITELIST_FILE) and os.path.isfile(WHITELIST_FILE):
+    with open(WHITELIST_FILE) as whitelist_file:
+        lines = whitelist_file.readlines()
+        if len(lines) > 0:
+            lines.append(WHITELIST)
+            WHITELIST = ','.join(lines)
 
 
 def setup_jinja(app):
@@ -88,15 +97,19 @@ async def index(request):
             if blacklisted(redirect_path):
                 raise Exception('Канал заблокирован.')
 
+            err = None
+            if not whitelisted(redirect_path):
+                err = 'Перед тем как использовать ссылку, напишите администратору.'
+
             redirect_url = f'https://{DOMAIN_NAME}/{redirect_path}'
             return {
                 'source_url': source_url,
                 'redirect_url': redirect_url,
+                'error': err,
             }
         except Exception as err:
             logger.error(err)
             return {
-                'source_url': source_url,
                 'error': str(err),
             }
     else:
@@ -147,8 +160,23 @@ async def parse_embed(url):
 
 
 def blacklisted(path):
+    # If blacklist is empty, skip.
+    if not BLACKLIST.strip():
+        return False
+
     blacklist = list(map(lambda str: str.strip().lower(), BLACKLIST.split(',')))
     if path.lower() in blacklist:
+        return True
+    return False
+
+
+def whitelisted(path):
+    # If whitelist is empty, skip.
+    if not WHITELIST.strip():
+        return True
+
+    whitelist = list(map(lambda str: str.strip().lower(), WHITELIST.split(',')))
+    if path.lower() in whitelist:
         return True
     return False
 
@@ -173,6 +201,8 @@ async def redirect(request):
         name = request.match_info.get('name')
         if blacklisted(name):
             return web.Response(status=451)
+        if not whitelisted(name):
+            return web.Response(status=404)
         location = f'tg://resolve?domain={name}'
         tme_url = f'https://t.me/{name}'
 
@@ -180,6 +210,8 @@ async def redirect(request):
         code = request.match_info.get('code')
         if blacklisted(f'joinchat/{code}'):
             return web.Response(status=451)
+        if not whitelisted(f'joinchat/{code}'):
+            return web.Response(status=404)
         location = f'tg://join?invite={code}'
         tme_url = f'https://t.me/joinchat/{code}'
 
@@ -187,6 +219,8 @@ async def redirect(request):
         name = request.match_info.get('name')
         if blacklisted(f'addstickers/{name}'):
             return web.Response(status=451)
+        if not whitelisted(f'addstickers/{name}'):
+            return web.Response(status=404)
         location = f'tg://addstickers?set={name}'
         tme_url = f'https://t.me/addstickers/{name}'
 
@@ -209,6 +243,8 @@ async def redirect(request):
             return {}
         if blacklisted(f'{name}/{post}'):
             return web.Response(status=451)
+        if not whitelisted(f'{name}/{post}'):
+            return web.Response(status=404)
         location = f'tg://resolve?domain={name}&post={post}'
         tme_url = f'https://t.me/{name}'
         tme_post_url = f'https://t.me/{name}/{post}?embed=1'
