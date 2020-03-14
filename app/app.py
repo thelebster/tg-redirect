@@ -9,6 +9,8 @@ from urllib.parse import urlparse, parse_qs
 import logging
 import re
 from bs4 import BeautifulSoup
+import csv
+import pandas as pd
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__file__)
@@ -22,7 +24,7 @@ BLACKLIST = os.getenv('BLACKLIST', '')
 
 BLACKLIST_FILE = os.getenv('BLACKLIST_FILE', '/config/blacklist.txt')
 if os.path.exists(BLACKLIST_FILE) and os.path.isfile(BLACKLIST_FILE):
-    with open(BLACKLIST_FILE) as blacklist_file:
+    with open(BLACKLIST_FILE, 'r') as blacklist_file:
         lines = blacklist_file.readlines()
         if len(lines) > 0:
             lines.append(BLACKLIST)
@@ -32,12 +34,18 @@ if os.path.exists(BLACKLIST_FILE) and os.path.isfile(BLACKLIST_FILE):
 WHITELIST = ''
 WHITELIST_FILE = os.getenv('WHITELIST_FILE', '/config/whitelist.txt')
 if os.path.exists(WHITELIST_FILE) and os.path.isfile(WHITELIST_FILE):
-    with open(WHITELIST_FILE) as whitelist_file:
+    with open(WHITELIST_FILE, 'r') as whitelist_file:
         lines = whitelist_file.readlines()
         if len(lines) > 0:
             lines.append(WHITELIST)
             WHITELIST = ','.join(lines)
             logger.debug(f'Whitelisted channels: {WHITELIST}')
+
+
+SHORT_NAMES = []
+SHORT_NAMES_FILE = os.getenv('SHORT_NAMES_FILE', '/config/shortnames.csv')
+if os.path.exists(SHORT_NAMES_FILE) and os.path.isfile(SHORT_NAMES_FILE):
+    SHORT_NAMES = pd.read_csv(SHORT_NAMES_FILE)
 
 
 def setup_jinja(app):
@@ -267,6 +275,17 @@ async def redirect(request):
         tme_url = f'https://t.me/{name}'
         tme_post_url = f'https://t.me/{name}/{post}?embed=1'
 
+    if route_name == 'shortname':
+        shortname = request.match_info.get('name')
+        results = SHORT_NAMES.loc[SHORT_NAMES['source'] == shortname]
+        if len(results) == 0:
+            return web.Response(status=404)
+        destination = results['destination'].iloc[0]
+        url = urlparse(destination)
+        default_hostname = f'{redirect_hostname}/'
+        path = url.path.replace(default_hostname, '').strip("/")
+        return web.HTTPTemporaryRedirect(location=f'/{path}')
+
     if location is None:
         return web.Response(status=404)
     else:
@@ -320,6 +339,7 @@ routes = [
     web.post('/', index, name='index'),
     web.get('/proxy', redirect, name='proxy'),
     web.get(r'/{name:[a-zA-Z0-9_]{5,}}', redirect, name='account'),
+    web.get(r'/s/{name:[a-zA-Z0-9_]{5,}}', redirect, name='shortname'),
     web.get('/joinchat/{code}', redirect, name='joinchat'),
     web.get('/addstickers/{name}', redirect, name='addstickers'),
     web.get(r'/{name:[a-zA-Z0-9_]{5,}}/{post:\d+}', redirect, name='post'),

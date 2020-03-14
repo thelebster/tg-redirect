@@ -26,6 +26,23 @@ mkdir -p config \
 && cp samplelist.txt config/whitelist.txt
 ```
 
+### Use short names
+
+Short name url will looks like `/s/SHORT_NAME`.
+
+Copy `sample.shortnames.txt` to `config/shortnames.csv` and add short names one per line.
+
+```
+source,destination
+durov,joinchat/ABCDEFGHIJKLMNOPQRSYUVWXYZ
+...
+```
+
+```
+mkdir -p config \
+&& cp samplelist.txt config/whitelist.txt
+```
+
 ```
 docker-compose -f docker-compose.yml up --build -d
 ```
@@ -144,6 +161,9 @@ docker-compose -f docker-compose.yml up --build -d --force
 ```
 
 ## Changelog
+
+**March 15, 2020**
+* Use `shortnames.csv` to provide a list of short names and destinations where user will be redirected. Could be useful to share join links, like `joinchat/ABCDEFGHIJKLMNOPQRSYUVWXYZ` in the special format `/s/SHORT_NAME`. 
 
 **March 8, 2020**
 * Use `whitelist.txt` to provide a list of allowed channels to make validation more strict.
