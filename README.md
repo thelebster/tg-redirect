@@ -8,6 +8,10 @@ Preview page for the message from the [Oh My Py](https://t.me/ohmypy) Telegram c
 
 ## Build and deploy
 
+```
+docker-compose -f docker-compose.yml up --build -d
+```
+
 ### Use blacklist
 
 Copy `samplelist.txt` to `config/blacklist.txt` and add blocked channels, one per line.
@@ -40,11 +44,7 @@ durov,joinchat/ABCDEFGHIJKLMNOPQRSYUVWXYZ
 
 ```
 mkdir -p config \
-&& cp samplelist.txt config/whitelist.txt
-```
-
-```
-docker-compose -f docker-compose.yml up --build -d
+&& cp sample.shortnames.txt config/shortnames.csv
 ```
 
 ## Local development environment
@@ -57,6 +57,7 @@ IMAGES_DIR=./img \
 DEVELOPMENT=True \
 BLACKLIST_FILE=./config/blacklist.txt \
 WHITELIST_FILE=./config/whitelist.txt \
+SHORT_NAMES_FILE=./config/shortnames.csv \
 python3 ./app/app.py
 ```
 
@@ -68,6 +69,7 @@ IMAGES_DIR=../files/img
 DEVELOPMENT=True
 BLACKLIST_FILE=../config/blacklist.txt
 WHITELIST_FILE=../config/whitelist.txt
+SHORT_NAMES_FILE=../config/shortnames.csv
 ``` 
 
 ## Nginx configuration
@@ -103,10 +105,6 @@ server {
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_pass http://tg-redirect;
-
-    # Attach Yandex.Metrika counter.
-    sub_filter_once on;
-    sub_filter '</head>' '<!-- Yandex.Metrika counter --> <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(57429748, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/57429748" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->';
   }
 
   location /files/img/ {
@@ -114,11 +112,7 @@ server {
   }
 
   location /static/ {
-    root /srv/tg-redirect/app;
-    
-    # Attach Yandex.Metrika counter.
-    sub_filter_once on;
-    sub_filter '</head>' '<!-- Yandex.Metrika counter --> <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(57429748, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/57429748" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->';
+    root /srv/tg-redirect/app;    
   }
 
   location /robots.txt {
