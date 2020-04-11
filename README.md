@@ -128,10 +128,6 @@ server {
     return 404;
   }
 
-  location = /help {
-    rewrite /help /static/help.html;    
-  }
-
   location = /400.html {
     root /srv/tg-redirect/app/static;
   }
